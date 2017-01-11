@@ -11,5 +11,5 @@ Download the archive from latest releases, and then import sql-builder-cos-vX.X.
 
 ### Authors ###
  
- * Leonardo "Metz" Metzger  ![github](https://github.com/leometzger)
- * Henry "HammZ" Hamon ![github](https://github.com/henryhamon)
+ * Leonardo "Metz" Metzger [github](https://github.com/leometzger)
+ * Henry "HammZ" Hamon [github](https://github.com/henryhamon)
