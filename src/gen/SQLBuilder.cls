@@ -262,20 +262,19 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
 {
 	Set tSC = $$$OK
 	Try {
-		Set values = "", field = ..Fields.Next(""),
-			statement = ..Statement
+		Set values = "", field = ..Fields.Next("")
 		
 		While field'="" {
-			Set:statement=2 $List(values, *+1) = field _ " = ?" //Update
-			Set:statement=3 $List(values, *+1) = field // Insert
+			Set:..Statement=2 $List(values, *+1) = field _ " = ?" //Update
+			Set:..Statement=3 $List(values, *+1) = field // Insert
 
 			Set field = ..Fields.Next(field)
 		}
 		
-		Set:statement=2 pQueryBlock = "SET " _ $ListToString(values,", ")
+		Set:..Statement=2 pQueryBlock = "SET " _ $ListToString(values,", ")
 		
 		Set $Piece(comma," ?,",$ListLength(values)+1)=""
-		Set:statement=3 pQueryBlock = "INTO (" _ $ListToString(values,", ")_") VALUES ("_$Extract(comma,0,*-1)_" )"
+		Set:..Statement=3 pQueryBlock = "INTO (" _ $ListToString(values,", ")_") VALUES ("_$Extract(comma,0,*-1)_" )"
 
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
