@@ -1,6 +1,8 @@
 Class gen.SQLBuilder Extends %RegisteredObject
 {
 
+Parameter Version = "0.0.3";
+
 Property Select As %String [ InitialExpression = "*", Internal ];
 
 Property Update As %String [ Internal ];
@@ -13,7 +15,7 @@ Property GroupBy As %String [ Internal ];
 
 Property OrderBy As %String [ Internal ];
 
-Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Delete", VALUELIST = ",1,2,3") [ InitialExpression = 1, Internal ];
+Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
 Method Delete(params As %String = "") As gen.SQLBuilder
 {
@@ -45,6 +47,13 @@ Method Update() As gen.SQLBuilder
 {
 	Set ..Select = ""
 	Set ..Statement = 2
+	Quit $This
+}
+
+Method Insert() As gen.SQLBuilder
+{
+	Set ..Select = ""
+	Set ..Statement = 4
 	Quit $This
 }
 
@@ -177,7 +186,8 @@ Method GetSQL() As %String
 {
 	Quit:..Statement=1 ..GetSelectStatement()
 	Quit:..Statement=2 ..GetUpdateStatement()
-	Quit:..Statement=3 ..GetDeleteStatement()
+	Quit:..Statement=3 ..GetInsertStatement()
+	Quit:..Statement=4 ..GetDeleteStatement()
 }
 
 Method GetSelectStatement() As %String [ Private ]
@@ -206,6 +216,14 @@ Method GetUpdateStatement() As %String [ Private ]
 	Quit sql
 }
 
+Method GetInsertStatement() As %String [ Private ]
+{
+	Set sql = "Insert "
+	//Set sql = sql _ " From " _ ..From
+	//Set:..Where'="" sql = sql _ " Where " _ ..Where
+	Quit sql
+}
+
 Method Execute(Output tSC As %Status, Args...) As %ResultSet
 {
 	Set tSC = $$$OK
@@ -220,16 +238,6 @@ Method Execute(Output tSC As %Status, Args...) As %ResultSet
 	Quit tRS
 }
 
-/// This callback method is invoked by the <METHOD>%New</METHOD> method to 
-/// provide notification that a new instance of an object is being created.
-/// 
-/// <P>If this method returns an error then the object will not be created.
-/// <p>It is passed the arguments provided in the %New call.
-/// When customizing this method, override the arguments with whatever variables and types you expect to receive from %New().
-/// For example, if you're going to call %New, passing 2 arguments, %OnNew's signature could be:
-/// <p>Method %OnNew(dob as %Date = "", name as %Name = "") as %Status
-/// If instead of returning a %Status code this returns an oref and this oref is a subclass of the current
-/// class then this oref will be the one returned to the caller of %New method.
 Method %OnNew(table As %String = "") As %Status [ Private, ServerOnly = 1 ]
 {
 	Set ..From = table
