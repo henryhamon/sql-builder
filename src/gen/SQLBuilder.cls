@@ -15,13 +15,15 @@ Property GroupBy As %String [ Internal ];
 
 Property OrderBy As %String [ Internal ];
 
+Property Fields As %ArrayOfDataTypes [ Private ];
+
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
 Method Delete(params As %String = "") As gen.SQLBuilder
 {
 	Set ..Select = ""
 	Set ..Update = ""
-	Set ..Statement = 3
+	Set ..Statement = 4
 	Quit $This
 }
 
@@ -53,15 +55,13 @@ Method Update() As gen.SQLBuilder
 Method Insert() As gen.SQLBuilder
 {
 	Set ..Select = ""
-	Set ..Statement = 4
+	Set ..Statement = 3
 	Quit $This
 }
 
-Method Set(args...) As gen.SQLBuilder
+Method Set(pField As %String, pValue As %String = "") As gen.SQLBuilder
 {
-	Set result = ..GetStringPrepare(args...)
-	Quit:result="" $This
-	Set ..Update = ..Update _ $Select(..Update="":"",1:",") _ result
+	Do:pValue'="" ..AddField(pField, pValue)
 	Quit $This
 }
 
@@ -211,7 +211,8 @@ Method GetDeleteStatement() As %String [ Private ]
 Method GetUpdateStatement() As %String [ Private ]
 {
 	Set sql = "Update " _ ..From 
-	Set sql = sql _ " SET " _ ..Update 
+	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
+	Set sql = sql _ setFieldsStatement
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Quit sql
 }
@@ -219,8 +220,8 @@ Method GetUpdateStatement() As %String [ Private ]
 Method GetInsertStatement() As %String [ Private ]
 {
 	Set sql = "Insert "
-	//Set sql = sql _ " From " _ ..From
-	//Set:..Where'="" sql = sql _ " Where " _ ..Where
+	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
+	Set sql = sql _ setFieldsStatement
 	Quit sql
 }
 
@@ -242,6 +243,44 @@ Method %OnNew(table As %String = "") As %Status [ Private, ServerOnly = 1 ]
 {
 	Set ..From = table
 	Quit $$$OK
+}
+
+/// This method is just to insert on %ArrayOfDataTypes property using Key and Value. <br>
+/// 'Cos caché set array inverse (Value, Key)...
+Method AddField(pField, pValue) As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ..Fields.SetAt(pValue, pField))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		Set values = "", field = ..Fields.Next(""),
+			statement = ..Statement
+		
+		While field'="" {
+			Set:statement=2 $List(values, *+1) = field _ " = ?" //Update
+			Set:statement=3 $List(values, *+1) = field // Insert
+
+			Set field = ..Fields.Next(field)
+		}
+		
+		Set:statement=2 pQueryBlock = "SET " _ $ListToString(values,", ")
+		
+		Set $Piece(comma," ?,",$ListLength(values)+1)=""
+		Set:statement=3 pQueryBlock = "INTO (" _ $ListToString(values,", ")_") VALUES ("_$Extract(comma,0,*-1)_" )"
+
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 }
 
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-11 08:52:21">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-11 10:39:09">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64294,29729.158075</TimeChanged>
+<TimeChanged>64294,38140.744782</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -40,6 +40,11 @@
 <Internal>1</Internal>
 </Property>
 
+<Property name="Fields">
+<Type>%ArrayOfDataTypes</Type>
+<Private>1</Private>
+</Property>
+
 <Property name="Statement">
 <Type>%Integer</Type>
 <Internal>1</Internal>
@@ -54,7 +59,7 @@
 <Implementation><![CDATA[
 	Set ..Select = ""
 	Set ..Update = ""
-	Set ..Statement = 3
+	Set ..Statement = 4
 	Quit $This
 ]]></Implementation>
 </Method>
@@ -93,18 +98,16 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Set ..Select = ""
-	Set ..Statement = 4
+	Set ..Statement = 3
 	Quit $This
 ]]></Implementation>
 </Method>
 
 <Method name="Set">
-<FormalSpec>args...</FormalSpec>
+<FormalSpec>pField:%String,pValue:%String=""</FormalSpec>
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
-	Set result = ..GetStringPrepare(args...)
-	Quit:result="" $This
-	Set ..Update = ..Update _ $Select(..Update="":"",1:",") _ result
+	Do:pValue'="" ..AddField(pField, pValue)
 	Quit $This
 ]]></Implementation>
 </Method>
@@ -308,7 +311,8 @@
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
 	Set sql = "Update " _ ..From 
-	Set sql = sql _ " SET " _ ..Update 
+	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
+	Set sql = sql _ setFieldsStatement
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Quit sql
 ]]></Implementation>
@@ -319,8 +323,8 @@
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
 	Set sql = "Insert "
-	//Set sql = sql _ " From " _ ..From
-	//Set:..Where'="" sql = sql _ " Where " _ ..Where
+	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
+	Set sql = sql _ setFieldsStatement
 	Quit sql
 ]]></Implementation>
 </Method>
@@ -352,47 +356,51 @@
 	Quit $$$OK
 ]]></Implementation>
 </Method>
-</Class>
 
-
-<Class name="gen.tests.Suite">
-<Super>Atomic.UnitTest.TestSuite</Super>
-<TimeChanged>64208,34392.509422</TimeChanged>
-<TimeCreated>64208,32695.561845</TimeCreated>
-
-<Parameter name="DESTROYTESTLOGS">
-<Default>1</Default>
-</Parameter>
-
-<Method name="Package">
-<ClassMethod>1</ClassMethod>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[	Quit "gen.tests"
-]]></Implementation>
-</Method>
-</Class>
-
-
-<Class name="gen.tests.TestSQLBuilder">
-<Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64208,36808.579145</TimeChanged>
-<TimeCreated>64208,34376.492281</TimeCreated>
-
-<Method name="testSelect">
+<Method name="AddField">
+<Description><![CDATA[
+This method is just to insert on %ArrayOfDataTypes property using Key and Value. <br>
+'Cos caché set array inverse (Value, Key)...]]></Description>
+<FormalSpec>pField,pValue</FormalSpec>
+<ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("id, nome").From("person")
-	Do ..Eql(sqlBuilder.GetSQL(),"Select id, nome From person")
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ..Fields.SetAt(pValue, pField))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 ]]></Implementation>
 </Method>
 
-<Method name="testEntreDatas">
+<Method name="AbstractGetFieldsBlock">
+<FormalSpec>*pQueryBlock</FormalSpec>
+<ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("id, nome").From("")
-]]></Implementation>
-</Method>
+	Set tSC = $$$OK
+	Try {
+		Set values = "", field = ..Fields.Next(""),
+			statement = ..Statement
+		
+		While field'="" {
+			Set:statement=2 $List(values, *+1) = field _ " = ?" //Update
+			Set:statement=3 $List(values, *+1) = field // Insert
 
-<Method name="testIf">
+			Set field = ..Fields.Next(field)
+		}
+		
+		Set:statement=2 pQueryBlock = "SET " _ $ListToString(values,", ")
+		
+		Set $Piece(comma," ?,",$ListLength(values)+1)=""
+		Set:statement=3 pQueryBlock = "INTO (" _ $ListToString(values,", ")_") VALUES ("_$Extract(comma,0,*-1)_" )"
+
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
 </Method>
 </Class>
+
 </Export>
