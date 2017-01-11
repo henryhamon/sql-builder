@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-11 08:23:06">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-11 08:52:21">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
 <TimeChanged>64294,29729.158075</TimeChanged>
@@ -354,4 +354,45 @@
 </Method>
 </Class>
 
+
+<Class name="gen.tests.Suite">
+<Super>Atomic.UnitTest.TestSuite</Super>
+<TimeChanged>64208,34392.509422</TimeChanged>
+<TimeCreated>64208,32695.561845</TimeCreated>
+
+<Parameter name="DESTROYTESTLOGS">
+<Default>1</Default>
+</Parameter>
+
+<Method name="Package">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit "gen.tests"
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="gen.tests.TestSQLBuilder">
+<Super>Atomic.UnitTest.TestHelper</Super>
+<TimeChanged>64208,36808.579145</TimeChanged>
+<TimeCreated>64208,34376.492281</TimeCreated>
+
+<Method name="testSelect">
+<Implementation><![CDATA[
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("id, nome").From("person")
+	Do ..Eql(sqlBuilder.GetSQL(),"Select id, nome From person")
+]]></Implementation>
+</Method>
+
+<Method name="testEntreDatas">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("id, nome").From("")
+]]></Implementation>
+</Method>
+
+<Method name="testIf">
+</Method>
+</Class>
 </Export>
