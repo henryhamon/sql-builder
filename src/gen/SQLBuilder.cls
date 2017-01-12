@@ -219,18 +219,20 @@ Method GetUpdateStatement() As %String [ Private ]
 
 Method GetInsertStatement() As %String [ Private ]
 {
-	Set sql = "Insert "
+	Set sql = "Insert INTO " _ ..From _ " "
 	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
 	Set sql = sql _ setFieldsStatement
+	W sql,!
 	Quit sql
 }
 
-Method Execute(Output tSC As %Status, Args...) As %ResultSet
+Method Execute(Output tSC As %Status = "", Args...) As %ResultSet
 {
 	Set tSC = $$$OK
 	Try {
 		Set statement = ##class(%SQL.Statement).%New()
-		Set tSC = statement.%Prepare(..GetSQL())
+		$$$THROWONERROR(tSC, statement.%Prepare(..GetSQL()))
+		
 		Set tRS = statement.%Execute(Args...)
 	}
 	Catch tException {
@@ -262,19 +264,20 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
 {
 	Set tSC = $$$OK
 	Try {
-		Set values = "", field = ..Fields.Next("")
+		Set into = "", field = ..Fields.Next("")
 		
 		While field'="" {
-			Set:..Statement=2 $List(values, *+1) = field _ " = ?" //Update
-			Set:..Statement=3 $List(values, *+1) = field // Insert
+			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ " = ?", ..Fields.GetAt(field)) //Update
+			If ..Statement=3 { // Insert
+				S $List(into, *+1) = field 
+				S $Li(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
+			}
 
 			Set field = ..Fields.Next(field)
 		}
 		
-		Set:..Statement=2 pQueryBlock = "SET " _ $ListToString(values,", ")
-		
-		Set $Piece(comma," ?,",$ListLength(values)+1)=""
-		Set:..Statement=3 pQueryBlock = "INTO (" _ $ListToString(values,", ")_") VALUES ("_$Extract(comma,0,*-1)_" )"
+		Set:..Statement=2 pQueryBlock = " SET " _ $ListToString(into,", ")
+		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$LTS(values,", ")_" )"
 
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-11 10:47:04">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-12 09:07:35">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64294,38812.753711</TimeChanged>
+<TimeChanged>64295,32714.443514</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -322,21 +322,23 @@
 <Private>1</Private>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
-	Set sql = "Insert "
+	Set sql = "Insert INTO " _ ..From _ " "
 	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
 	Set sql = sql _ setFieldsStatement
+	W sql,!
 	Quit sql
 ]]></Implementation>
 </Method>
 
 <Method name="Execute">
-<FormalSpec>*tSC:%Status,Args...</FormalSpec>
+<FormalSpec>*tSC:%Status="",Args...</FormalSpec>
 <ReturnType>%ResultSet</ReturnType>
 <Implementation><![CDATA[
 	Set tSC = $$$OK
 	Try {
 		Set statement = ##class(%SQL.Statement).%New()
-		Set tSC = statement.%Prepare(..GetSQL())
+		$$$THROWONERROR(tSC, statement.%Prepare(..GetSQL()))
+		
 		Set tRS = statement.%Execute(Args...)
 	}
 	Catch tException {
@@ -380,19 +382,20 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 <Implementation><![CDATA[
 	Set tSC = $$$OK
 	Try {
-		Set values = "", field = ..Fields.Next("")
+		Set into = "", field = ..Fields.Next("")
 		
 		While field'="" {
-			Set:..Statement=2 $List(values, *+1) = field _ " = ?" //Update
-			Set:..Statement=3 $List(values, *+1) = field // Insert
+			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ " = ?", ..Fields.GetAt(field)) //Update
+			If ..Statement=3 { // Insert
+				S $List(into, *+1) = field 
+				S $Li(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
+			}
 
 			Set field = ..Fields.Next(field)
 		}
 		
-		Set:..Statement=2 pQueryBlock = "SET " _ $ListToString(values,", ")
-		
-		Set $Piece(comma," ?,",$ListLength(values)+1)=""
-		Set:..Statement=3 pQueryBlock = "INTO (" _ $ListToString(values,", ")_") VALUES ("_$Extract(comma,0,*-1)_" )"
+		Set:..Statement=2 pQueryBlock = " SET " _ $ListToString(into,", ")
+		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$LTS(values,", ")_" )"
 
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
@@ -403,4 +406,44 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 </Class>
 
 
+<Class name="gen.tests.Suite">
+<Super>Atomic.UnitTest.TestSuite</Super>
+<TimeChanged>64208,34392.509422</TimeChanged>
+<TimeCreated>64208,32695.561845</TimeCreated>
+
+<Parameter name="DESTROYTESTLOGS">
+<Default>1</Default>
+</Parameter>
+
+<Method name="Package">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit "gen.tests"
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="gen.tests.TestSQLBuilder">
+<Super>Atomic.UnitTest.TestHelper</Super>
+<TimeChanged>64208,36808.579145</TimeChanged>
+<TimeCreated>64208,34376.492281</TimeCreated>
+
+<Method name="testSelect">
+<Implementation><![CDATA[
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("id, nome").From("person")
+	Do ..Eql(sqlBuilder.GetSQL(),"Select id, nome From person")
+]]></Implementation>
+</Method>
+
+<Method name="testEntreDatas">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("id, nome").From("")
+]]></Implementation>
+</Method>
+
+<Method name="testIf">
+</Method>
+</Class>
 </Export>
