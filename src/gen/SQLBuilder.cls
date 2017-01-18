@@ -1,7 +1,7 @@
 Class gen.SQLBuilder Extends %RegisteredObject
 {
 
-Parameter Version = "0.0.3";
+Parameter Version = "0.0.4";
 
 Property Select As %String [ InitialExpression = "*", Internal ];
 
@@ -108,7 +108,7 @@ Method Join(table As %String, prop As %String) As gen.SQLBuilder
 {
 }
 
-ClassMethod GetStringPrepare(args...) As %String [ Private ]
+ClassMethod GetStringPrepare(args...) As %String
 {
 	Set output = ""
 	Try {
@@ -119,6 +119,7 @@ ClassMethod GetStringPrepare(args...) As %String [ Private ]
 		Set matcher.Text = output
 		
 		If count > 1 {
+	
 			Set k = 2, sanitize = "'"
 			
 			Set:$Find($ZConvert(output,"U"),"LIKE")>0 sanitize = "#"
@@ -135,6 +136,8 @@ ClassMethod GetStringPrepare(args...) As %String [ Private ]
 		} Else {
 			Set:matcher.Match(output) output = ""
 		}
+		
+		
 	} Catch {
 		Set output = ""
 	}
