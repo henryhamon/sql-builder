@@ -55,9 +55,9 @@ Method Insert() As gen.SQLBuilder
 	Quit $This
 }
 
-Method Set(pField As %String, pValue As %String = "") As gen.SQLBuilder
+Method Set(pField As %String, pValue As %String = "", pAllowNull As %Boolean = 0) As gen.SQLBuilder
 {
-	Do:pValue'="" ..AddField(pField, pValue)
+	Do:((pValue'="")||(pAllowNull=1)) ..AddField(pField, pValue)
 	Quit $This
 }
 
@@ -258,10 +258,14 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
 		Set into = "", field = ..Fields.Next("")
 		
 		While field'="" {
-			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ " = ?", ..Fields.GetAt(field)) //Update
+			Set updateAttr = " = ?"
+			Set:..Fields.GetAt(field)="" updateAttr = ""
+			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ updateAttr, ..Fields.GetAt(field)) //Update
+			Kill updateAttr
+			
 			If ..Statement=3 { // Insert
-				S $List(into, *+1) = field 
-				S $Li(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
+				Set $List(into, *+1) = field 
+				Set $List(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
 			}
 
 			Set field = ..Fields.Next(field)

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-18 14:36:44">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-18 16:39:25">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64301,52600.92481</TimeChanged>
+<TimeChanged>64301,59926.350334</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -100,10 +100,10 @@
 </Method>
 
 <Method name="Set">
-<FormalSpec>pField:%String,pValue:%String=""</FormalSpec>
+<FormalSpec>pField:%String,pValue:%String="",pAllowNull:%Boolean=0</FormalSpec>
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
-	Do:pValue'="" ..AddField(pField, pValue)
+	Do:((pValue'="")||(pAllowNull=1)) ..AddField(pField, pValue)
 	Quit $This
 ]]></Implementation>
 </Method>
@@ -376,10 +376,14 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 		Set into = "", field = ..Fields.Next("")
 		
 		While field'="" {
-			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ " = ?", ..Fields.GetAt(field)) //Update
+			Set updateAttr = " = ?"
+			Set:..Fields.GetAt(field)="" updateAttr = ""
+			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ updateAttr, ..Fields.GetAt(field)) //Update
+			Kill updateAttr
+			
 			If ..Statement=3 { // Insert
-				S $List(into, *+1) = field 
-				S $Li(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
+				Set $List(into, *+1) = field 
+				Set $List(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
 			}
 
 			Set field = ..Fields.Next(field)
@@ -417,7 +421,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64301,51134.222045</TimeChanged>
+<TimeChanged>64301,59791.169811</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="TestSelect">
@@ -472,6 +476,59 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 		).Where("Age In (?,?,?,?)",10,20,30,40)
 		
 	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age In ('10','20','30','40')")
+]]></Implementation>
+</Method>
+
+<Method name="TestFixedArgument">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
+		).Where("Age = 10")
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age = 10")
+]]></Implementation>
+</Method>
+
+<Method name="TestSimpleUpdate">
+<Implementation><![CDATA[
+	Set age = $Random(90)+1
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Update(
+		).Set("Name", "Nathan Drake"
+		).Set("Age", age).Where("ID = ?",10)
+	
+	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET Age = '"_age_"', Name = 'Nathan Drake' Where ID = '10'")
+]]></Implementation>
+</Method>
+
+<Method name="TestSimpleInsert">
+<Implementation><![CDATA[
+	Set age = $Random(90)+1
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Insert(
+		).Set("Name", "Nathan Drake"
+		).Set("Age", age)
+	
+	Do ..Eql(sqlBuilder.GetSQL(),"Insert INTO sample.person  (Age, Name) VALUES ('"_age_"', 'Nathan Drake' )")
+]]></Implementation>
+</Method>
+
+<Method name="TestUpdateSetCase">
+<Implementation><![CDATA[
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Update(
+		).Set("FavoriteColors = (CASE "
+						_"WHEN (Age = 1) THEN 'Red' "
+						_"WHEN (Age = 2) THEN 'Orange' "
+						_"WHEN (Age = 3) THEN 'Yellow' "
+						_"WHEN (Age = 4) THEN 'Green' "
+						_"WHEN (Age = 5) THEN 'Blue' "
+						_"WHEN (Age = 6) THEN 'Purple' END)",,1)
+	
+	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET FavoriteColors = (CASE "
+						_"WHEN (Age = 1) THEN 'Red' "
+						_"WHEN (Age = 2) THEN 'Orange' "
+						_"WHEN (Age = 3) THEN 'Yellow' "
+						_"WHEN (Age = 4) THEN 'Green' "
+						_"WHEN (Age = 5) THEN 'Blue' "
+						_"WHEN (Age = 6) THEN 'Purple' END)")
 ]]></Implementation>
 </Method>
 
