@@ -108,7 +108,7 @@ Method Join(table As %String, prop As %String) As gen.SQLBuilder
 {
 }
 
-ClassMethod GetStringPrepare(args...) As %String
+ClassMethod GetStringPrepare(args...) As %String [ Private ]
 {
 	Set output = ""
 	Try {

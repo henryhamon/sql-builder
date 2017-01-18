@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-18 14:35:22">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-18 14:36:44">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64301,52342.052582</TimeChanged>
+<TimeChanged>64301,52600.92481</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -179,6 +179,7 @@
 <Method name="GetStringPrepare">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>args...</FormalSpec>
+<Private>1</Private>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
 	Set output = ""
