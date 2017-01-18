@@ -113,30 +113,22 @@ ClassMethod GetStringPrepare(args...) As %String
 	Set output = ""
 	Try {
 		Set output = $Get(args(1))
-		Set count = $Order(args(""),-1)
 		
-		Set matcher = ##class(%Regex.Matcher).%New("\?")
-		Set matcher.Text = output
+		Set k = 2, sanitize = "'"
 		
-		If count > 1 {
-	
-			Set k = 2, sanitize = "'"
-			
-			Set:$Find($ZConvert(output,"U"),"LIKE")>0 sanitize = "#"
-			
-			While matcher.Locate() {
-				Set matcher.Text = matcher.ReplaceFirst(sanitize_$Replace($Get(args(k)),"'","")_sanitize)
-		        Set k = $Increment(k)
-		    }
-		    
-		    Set output = matcher.Text
-		    Set:$Find(output,"''")>0 output = ""
-		    Set:$Find(output,"##")>0 output = ""
-		    Set:output'="" output = $Replace(output,"#","")
-		} Else {
-			Set:matcher.Match(output) output = ""
-		}
+		Set:$Find($ZConvert(output,"U"),"LIKE")>0 sanitize = "#"
+		Set matcher = $ListFromString(output,"?"), output = ""
 		
+	    For i=1:1:$ListLength(matcher) {
+		    Set got = ""
+		    Set:$Get(args(k))'="" got = sanitize_$Replace(args(k),"'","")_sanitize
+		    Set output = output _ $List(matcher,i) _ got
+	        Set k = $Increment(k)
+	    }
+	    
+	    Set:$Find(output,"''")>0 output = ""
+	    Set:$Find(output,"##")>0 output = ""
+	    Set:output'="" output = $Replace(output,"#","")
 		
 	} Catch {
 		Set output = ""
