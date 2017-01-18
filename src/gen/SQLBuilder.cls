@@ -30,10 +30,6 @@ Method Delete(params As %String = "") As gen.SQLBuilder
 Method Select(params As %String = "") As gen.SQLBuilder
 {
 	If params'="" {
-		Set matcher = ##class(%Regex.Matcher).%New("^(SELECT)\s")
-		Set matcher.Text = $ZConvert(params,"U")
-		Set:matcher.Locate() params = $Extract(params,8,*+1)
-		
 		Set auxList = $ListFromString(params,",")
 		Set select = ""
 		For k=1:1:$ListLength(auxList) {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-12 09:07:35">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-18 11:21:41">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64295,32714.443514</TimeChanged>
+<TimeChanged>64301,40863.468076</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -69,10 +69,6 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	If params'="" {
-		Set matcher = ##class(%Regex.Matcher).%New("^(SELECT)\s")
-		Set matcher.Text = $ZConvert(params,"U")
-		Set:matcher.Locate() params = $Extract(params,8,*+1)
-		
 		Set auxList = $ListFromString(params,",")
 		Set select = ""
 		For k=1:1:$ListLength(auxList) {
