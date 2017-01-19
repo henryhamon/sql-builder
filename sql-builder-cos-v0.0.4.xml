@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-18 16:39:25">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-19 16:53:47">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64301,59926.350334</TimeChanged>
+<TimeChanged>64302,60781.067123</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -354,7 +354,7 @@
 <Description><![CDATA[
 This method is just to insert on %ArrayOfDataTypes property using Key and Value. <br>
 'Cos caché set array inverse (Value, Key)...]]></Description>
-<FormalSpec>pField,pValue</FormalSpec>
+<FormalSpec>pField,pValue=""</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	Set tSC = $$$OK

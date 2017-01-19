@@ -240,7 +240,7 @@ Method %OnNew(table As %String = "") As %Status [ Private, ServerOnly = 1 ]
 
 /// This method is just to insert on %ArrayOfDataTypes property using Key and Value. <br>
 /// 'Cos caché set array inverse (Value, Key)...
-Method AddField(pField, pValue) As %Status
+Method AddField(pField, pValue = "") As %Status
 {
 	Set tSC = $$$OK
 	Try {
