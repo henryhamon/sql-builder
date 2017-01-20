@@ -219,7 +219,7 @@ Method GetInsertStatement() As %String [ Private ]
 
 Method Execute(Output tSC As %Status = "", Args...) As %ResultSet
 {
-	Set tSC = $$$OK
+	Set tSC = $$$OK, tRS = ""
 	Try {
 		Set statement = ##class(%SQL.Statement).%New()
 		$$$THROWONERROR(tSC, statement.%Prepare(..GetSQL()))

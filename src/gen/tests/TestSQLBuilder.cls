@@ -88,7 +88,7 @@ Method TestUpdateSetCase()
 						_"WHEN (Age = 3) THEN 'Yellow' "
 						_"WHEN (Age = 4) THEN 'Green' "
 						_"WHEN (Age = 5) THEN 'Blue' "
-						_"WHEN (Age = 6) THEN 'Purple' END)",,1)
+						_"WHEN (Age = 6) THEN 'Purple' END)",,$$$YES)
 	
 	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET FavoriteColors = (CASE "
 						_"WHEN (Age = 1) THEN 'Red' "

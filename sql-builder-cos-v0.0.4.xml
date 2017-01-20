@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-19 16:53:47">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-20 17:01:32">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64302,60781.067123</TimeChanged>
+<TimeChanged>64303,61276.427012</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -325,7 +325,7 @@
 <FormalSpec>*tSC:%Status="",Args...</FormalSpec>
 <ReturnType>%ResultSet</ReturnType>
 <Implementation><![CDATA[
-	Set tSC = $$$OK
+	Set tSC = $$$OK, tRS = ""
 	Try {
 		Set statement = ##class(%SQL.Statement).%New()
 		$$$THROWONERROR(tSC, statement.%Prepare(..GetSQL()))
@@ -421,7 +421,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64301,59791.169811</TimeChanged>
+<TimeChanged>64302,61724.203555</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="TestSelect">
@@ -520,7 +520,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 						_"WHEN (Age = 3) THEN 'Yellow' "
 						_"WHEN (Age = 4) THEN 'Green' "
 						_"WHEN (Age = 5) THEN 'Blue' "
-						_"WHEN (Age = 6) THEN 'Purple' END)",,1)
+						_"WHEN (Age = 6) THEN 'Purple' END)",,$$$YES)
 	
 	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET FavoriteColors = (CASE "
 						_"WHEN (Age = 1) THEN 'Red' "
