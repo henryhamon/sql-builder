@@ -79,7 +79,7 @@ Method Column(pField, pAlias As %String = "") As gen.SQLBuilder
 Method As(pAlias As %String) As gen.SQLBuilder
 {
 	Set ..SubQueryAlias = pAlias
-	Q $This
+	Quit $This
 }
 
 Method From(pFrom As %String) As gen.SQLBuilder
@@ -248,7 +248,7 @@ Method GetInsertStatement() As %String [ Private ]
 	Set sql = "Insert INTO " _ ..From _ " "
 	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
 	Set sql = sql _ setFieldsStatement
-	W sql,!
+	Write sql,!
 	Quit sql
 }
 
@@ -307,7 +307,7 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
 		}
 		
 		Set:..Statement=2 pQueryBlock = " SET " _ $ListToString(into,", ")
-		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$LTS(values,", ")_" )"
+		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$ListToString(values,", ")_" )"
 
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
