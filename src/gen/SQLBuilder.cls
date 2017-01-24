@@ -182,6 +182,7 @@ ClassMethod GetStringPrepare(args...) As %String [ Private ]
 
 Method Order(pOrderBy As %String) As gen.SQLBuilder
 {
+	Set ..OrderBy = ""
 	Quit ..OrderBy(pOrderBy)
 }
 

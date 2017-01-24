@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 17:17:20">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 17:28:24">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64307,62228.882016</TimeChanged>
-=======
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2016.1.2 (Build 206U)" ts="2017-01-24 16:49:11">
-<Class name="gen.SQLBuilder">
-<Super>%RegisteredObject</Super>
-<TimeChanged>64307,60544.164576</TimeChanged>
->>>>>>> e56e6468888033c379ee3c4aec0adc017b8aa96b
+<TimeChanged>64307,62897.344491</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -396,7 +389,7 @@
 	Set sql = "Insert INTO " _ ..From _ " "
 	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
 	Set sql = sql _ setFieldsStatement
-	W sql,!
+	Write sql,!
 	Quit sql
 ]]></Implementation>
 </Method>
@@ -470,7 +463,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 		}
 		
 		Set:..Statement=2 pQueryBlock = " SET " _ $ListToString(into,", ")
-		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$LTS(values,", ")_" )"
+		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$ListToString(values,", ")_" )"
 
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
@@ -479,7 +472,6 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 ]]></Implementation>
 </Method>
 </Class>
-<<<<<<< HEAD
 
 
 <Class name="gen.tests.Suite">
@@ -692,6 +684,4 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 ]]></Implementation>
 </Method>
 </Class>
-=======
->>>>>>> e56e6468888033c379ee3c4aec0adc017b8aa96b
 </Export>
