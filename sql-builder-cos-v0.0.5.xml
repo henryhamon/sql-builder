@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 14:29:18">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 14:31:05">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
 <TimeChanged>64307,51755.451644</TimeChanged>
@@ -467,7 +467,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64307,52107.531383</TimeChanged>
+<TimeChanged>64307,52258.352874</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="factory">
@@ -619,6 +619,12 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 		).Select("ID").Column("Name").Where("Age > ?",10)
 		
 	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	
+	
+	Set sqlBuilder = ..factory(
+		).Select("ID").Column("Name").Column("Age","Ages").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,Age As Ages From sample.person Where Age > '10'" )
 ]]></Implementation>
 </Method>
 

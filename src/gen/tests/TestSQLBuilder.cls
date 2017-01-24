@@ -137,6 +137,12 @@ Method TestSelectColumn()
 		).Select("ID").Column("Name").Where("Age > ?",10)
 		
 	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	
+	
+	Set sqlBuilder = ..factory(
+		).Select("ID").Column("Name").Column("Age","Ages").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,Age As Ages From sample.person Where Age > '10'" )
 }
 
 Method TestSubqueryOnSelect()
