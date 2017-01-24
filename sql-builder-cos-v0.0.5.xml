@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 14:33:30">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 17:17:20">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64307,52398.768409</TimeChanged>
+<TimeChanged>64307,62228.882016</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -50,8 +50,15 @@
 <Private>1</Private>
 </Property>
 
-<Property name="SubQueryAlias">
+<Property name="TableAlias">
 <Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="UsedAsSubQuery">
+<Type>%Boolean</Type>
+<InitialExpression>0</InitialExpression>
+<Private>1</Private>
 </Property>
 
 <Property name="Statement">
@@ -61,6 +68,18 @@
 <Parameter name="DISPLAYLIST" value=",Select,Update,Insert,Delete"/>
 <Parameter name="VALUELIST" value=",1,2,3,4"/>
 </Property>
+
+<Method name="SubQueryAlias">
+<Implementation><![CDATA[
+	Do ..IsSubQuery()
+	Quit ..TableAlias
+]]></Implementation>
+</Method>
+
+<Method name="IsSubQuery">
+<Implementation><![CDATA[	Set ..UsedAsSubQuery = $$$YES
+]]></Implementation>
+</Method>
 
 <Method name="Delete">
 <FormalSpec>params:%String=""</FormalSpec>
@@ -121,9 +140,12 @@
 <FormalSpec>pField,pAlias:%String=""</FormalSpec>
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
-	Set:($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) pField = "("_
-		pField.GetSQL() _ ")" _ 
-		$Case(pField.SubQueryAlias,"":"",:" As " _ pField.SubQueryAlias)
+	
+	If ($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) {
+		Do pField.IsSubQuery()
+		Set pField = "("_ pField.GetSQL() _ ")" _ 
+			$Case(pField.SubQueryAlias(),"":"",:" As " _ pField.SubQueryAlias())
+	}
 		
 	Set:pAlias'="" pField = pField _ " As " _ pAlias
 	Do ..Columns.Insert(pField)
@@ -135,7 +157,7 @@
 <FormalSpec>pAlias:%String</FormalSpec>
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
-	Set ..SubQueryAlias = pAlias
+	Set ..TableAlias = pAlias
 	Quit $This
 ]]></Implementation>
 </Method>
@@ -324,7 +346,10 @@
 	
 	Set sql = "Select " _ $Case($ListLength(select),0: ..Select,:$ListToString(select,","))
 	
-	Set sql = sql _ " From " _ ..From
+	Set from = ..From
+	Set:((..TableAlias'="")&&(..UsedAsSubQuery=$$$NO)) from = from _ " As "_..TableAlias
+	
+	Set sql = sql _ " From " _ from
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
@@ -467,7 +492,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64307,52258.352874</TimeChanged>
+<TimeChanged>64307,61599.678122</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="factory">
@@ -637,6 +662,23 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 	Do sqlBuilder.Column(..factory().Select("Age").Where("Age < ?",50).As("Ages"))
 	
 	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+]]></Implementation>
+</Method>
+
+<Method name="TestTableAlias">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ..factory().Column("ID"
+		).Column( ..factory().Select("Age").Where("Age < ?",50).As("Ages")
+	).Where("Age > ?",10)
+
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+	
+	Set sqlBuilder = ..factory().Column("ID"
+		).Column(..factory().Select("Age").Where("Age < ?",50).As("Ages")
+	).Where("Age > ?",10).As("First")
+
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
 ]]></Implementation>
 </Method>
 </Class>

@@ -19,9 +19,22 @@ Property Fields As %ArrayOfDataTypes [ Private ];
 
 Property Columns As %ListOfDataTypes [ Private ];
 
-Property SubQueryAlias As %String;
+Property TableAlias As %String [ Private ];
+
+Property UsedAsSubQuery As %Boolean [ InitialExpression = 0, Private ];
 
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
+
+Method SubQueryAlias()
+{
+	Do ..IsSubQuery()
+	Quit ..TableAlias
+}
+
+Method IsSubQuery()
+{
+	Set ..UsedAsSubQuery = $$$YES
+}
 
 Method Delete(params As %String = "") As gen.SQLBuilder
 {
@@ -67,9 +80,12 @@ Method Set(pField As %String, pValue As %String = "", pAllowNull As %Boolean = 0
 
 Method Column(pField, pAlias As %String = "") As gen.SQLBuilder
 {
-	Set:($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) pField = "("_
-		pField.GetSQL() _ ")" _ 
-		$Case(pField.SubQueryAlias,"":"",:" As " _ pField.SubQueryAlias)
+	
+	If ($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) {
+		Do pField.IsSubQuery()
+		Set pField = "("_ pField.GetSQL() _ ")" _ 
+			$Case(pField.SubQueryAlias(),"":"",:" As " _ pField.SubQueryAlias())
+	}
 		
 	Set:pAlias'="" pField = pField _ " As " _ pAlias
 	Do ..Columns.Insert(pField)
@@ -78,7 +94,7 @@ Method Column(pField, pAlias As %String = "") As gen.SQLBuilder
 
 Method As(pAlias As %String) As gen.SQLBuilder
 {
-	Set ..SubQueryAlias = pAlias
+	Set ..TableAlias = pAlias
 	Quit $This
 }
 
@@ -219,7 +235,10 @@ Method GetSelectStatement() As %String [ Private ]
 	
 	Set sql = "Select " _ $Case($ListLength(select),0: ..Select,:$ListToString(select,","))
 	
-	Set sql = sql _ " From " _ ..From
+	Set from = ..From
+	Set:((..TableAlias'="")&&(..UsedAsSubQuery=$$$NO)) from = from _ " As "_..TableAlias
+	
+	Set sql = sql _ " From " _ from
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy

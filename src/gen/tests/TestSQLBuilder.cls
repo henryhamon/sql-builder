@@ -156,5 +156,21 @@ Method TestSubqueryOnSelect()
 	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
 }
 
+Method TestTableAlias()
+{
+	
+	Set sqlBuilder = ..factory().Column("ID"
+		).Column( ..factory().Select("Age").Where("Age < ?",50).As("Ages")
+	).Where("Age > ?",10)
+
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+	
+	Set sqlBuilder = ..factory().Column("ID"
+		).Column(..factory().Select("Age").Where("Age < ?",50).As("Ages")
+	).Where("Age > ?",10).As("First")
+
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
+}
+
 }
 
