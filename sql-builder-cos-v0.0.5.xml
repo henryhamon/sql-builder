@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 14:31:05">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2016.1.2 (Build 206U)" ts="2017-01-24 16:47:53">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64307,51755.451644</TimeChanged>
+<TimeChanged>64307,60338.447493</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -251,7 +251,9 @@
 <Method name="Order">
 <FormalSpec>pOrderBy:%String</FormalSpec>
 <ReturnType>gen.SQLBuilder</ReturnType>
-<Implementation><![CDATA[	Quit ..OrderBy(pOrderBy)
+<Implementation><![CDATA[
+	Set ..OrderBy = ""
+	Quit ..OrderBy(pOrderBy)
 ]]></Implementation>
 </Method>
 
@@ -442,201 +444,6 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
-</Class>
-
-
-<Class name="gen.tests.Suite">
-<Super>Atomic.UnitTest.TestSuite</Super>
-<TimeChanged>64208,34392.509422</TimeChanged>
-<TimeCreated>64208,32695.561845</TimeCreated>
-
-<Parameter name="DESTROYTESTLOGS">
-<Default>1</Default>
-</Parameter>
-
-<Method name="Package">
-<ClassMethod>1</ClassMethod>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[	Quit "gen.tests"
-]]></Implementation>
-</Method>
-</Class>
-
-
-<Class name="gen.tests.TestSQLBuilder">
-<Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64307,52258.352874</TimeChanged>
-<TimeCreated>64208,34376.492281</TimeCreated>
-
-<Method name="factory">
-<ClassMethod>1</ClassMethod>
-<ReturnType>gen.SQLBuilder</ReturnType>
-<Implementation><![CDATA[	Quit ##class(gen.SQLBuilder).%New("sample.person")
-]]></Implementation>
-</Method>
-
-<Method name="TestSelect">
-<Implementation><![CDATA[
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person")
-	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person")
-]]></Implementation>
-</Method>
-
-<Method name="TestSelectAll">
-<Implementation><![CDATA[
-	Set sqlBuilder = ..factory().Select().From("sample.person")
-	Do ..Is(sqlBuilder.GetSQL(),"Select * From sample.person")
-]]></Implementation>
-</Method>
-
-<Method name="TestWhere">
-<Implementation><![CDATA[
-	
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person"
-		).Where("Name %STARSTSWITH ?","Jo")
-		
-	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'")
-]]></Implementation>
-</Method>
-
-<Method name="TestOrderBy">
-<Implementation><![CDATA[
-	
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person"
-		).Order("Name")
-		
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN From sample.person Order By Name")
-]]></Implementation>
-</Method>
-
-<Method name="TestBetween">
-<Implementation><![CDATA[
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
-		).Between("Age",10,50)
-		
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50)")
-]]></Implementation>
-</Method>
-
-<Method name="TestAndCondition">
-<Implementation><![CDATA[
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
-		).Between("Age",10,50).And("Name %STARSTSWITH ?","Jo")
-		
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50) AND Name %STARSTSWITH 'Jo'")
-]]></Implementation>
-</Method>
-
-<Method name="TestComplexWhere">
-<Implementation><![CDATA[
-	
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
-		).Where("Age In (?,?,?,?)",10,20,30,40)
-		
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age In ('10','20','30','40')")
-]]></Implementation>
-</Method>
-
-<Method name="TestFixedArgument">
-<Implementation><![CDATA[
-	
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
-		).Where("Age = 10")
-		
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age = 10")
-]]></Implementation>
-</Method>
-
-<Method name="TestSimpleUpdate">
-<Implementation><![CDATA[
-	Set age = $Random(90)+1
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Update(
-		).Set("Name", "Nathan Drake"
-		).Set("Age", age).Where("ID = ?",10)
-	
-	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET Age = '"_age_"', Name = 'Nathan Drake' Where ID = '10'")
-]]></Implementation>
-</Method>
-
-<Method name="TestSimpleInsert">
-<Implementation><![CDATA[
-	Set age = $Random(90)+1
-	Set sqlBuilder = ..factory().Insert(
-		).Set("Name", "Nathan Drake"
-		).Set("Age", age)
-	
-	Do ..Eql(sqlBuilder.GetSQL(),"Insert INTO sample.person  (Age, Name) VALUES ('"_age_"', 'Nathan Drake' )")
-]]></Implementation>
-</Method>
-
-<Method name="TestUpdateSetCase">
-<Implementation><![CDATA[
-	Set sqlBuilder = ..factory().Update(
-		).Set("FavoriteColors = (CASE "
-						_"WHEN (Age = 1) THEN 'Red' "
-						_"WHEN (Age = 2) THEN 'Orange' "
-						_"WHEN (Age = 3) THEN 'Yellow' "
-						_"WHEN (Age = 4) THEN 'Green' "
-						_"WHEN (Age = 5) THEN 'Blue' "
-						_"WHEN (Age = 6) THEN 'Purple' END)",,$$$YES)
-	
-	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET FavoriteColors = (CASE "
-						_"WHEN (Age = 1) THEN 'Red' "
-						_"WHEN (Age = 2) THEN 'Orange' "
-						_"WHEN (Age = 3) THEN 'Yellow' "
-						_"WHEN (Age = 4) THEN 'Green' "
-						_"WHEN (Age = 5) THEN 'Blue' "
-						_"WHEN (Age = 6) THEN 'Purple' END)")
-]]></Implementation>
-</Method>
-
-<Method name="testIf">
-</Method>
-
-<Method name="TestSubQueryOnWhere">
-<Implementation><![CDATA[
-	Set sqlBuilder = ..factory(
-		).Select("ID, Name, SSN, Age"
-		).Where("Age =?",##class(gen.SQLBuilder).%New("sample.person"
-			).Select("Age").Where("Name = ?","Luke Skywalker")
-		)
-
-	Do ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
-]]></Implementation>
-</Method>
-
-<Method name="TestSelectColumn">
-<Implementation><![CDATA[
-	Set sqlBuilder = ..factory(
-		).Select().Column("ID").Column("Name").Where("Age > ?",10)
-		
-	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
-	
-	
-	Set sqlBuilder = ..factory(
-		).Select("ID").Column("Name").Where("Age > ?",10)
-		
-	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
-	
-	
-	Set sqlBuilder = ..factory(
-		).Select("ID").Column("Name").Column("Age","Ages").Where("Age > ?",10)
-		
-	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,Age As Ages From sample.person Where Age > '10'" )
-]]></Implementation>
-</Method>
-
-<Method name="TestSubqueryOnSelect">
-<Implementation><![CDATA[
-	Set sqlBuilder = ..factory(
-		).Select().Column("ID").Column("Name").Where("Age > ?",10)
-	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
-		
-	Do sqlBuilder.Column(..factory().Select("Age").Where("Age < ?",50).As("Ages"))
-	
-	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
 ]]></Implementation>
 </Method>
 </Class>
