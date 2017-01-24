@@ -17,7 +17,9 @@ Property OrderBy As %String [ Internal ];
 
 Property Fields As %ArrayOfDataTypes [ Private ];
 
-Property Columns As %ArrayOfDataTypes [ Private ];
+Property Columns As %ListOfDataTypes [ Private ];
+
+Property SubQueryAlias As %String;
 
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
@@ -61,6 +63,23 @@ Method Set(pField As %String, pValue As %String = "", pAllowNull As %Boolean = 0
 {
 	Do:((pValue'="")||(pAllowNull=1)) ..AddField(pField, pValue)
 	Quit $This
+}
+
+Method Column(pField, pAlias As %String = "") As gen.SQLBuilder
+{
+	Set:($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) pField = "("_
+		pField.GetSQL() _ ")" _ 
+		$Case(pField.SubQueryAlias,"":"",:" As " _ pField.SubQueryAlias)
+		
+	Set:pAlias'="" pField = pField _ " As " _ pAlias
+	Do ..Columns.Insert(pField)
+	Quit $This
+}
+
+Method As(pAlias As %String) As gen.SQLBuilder
+{
+	Set ..SubQueryAlias = pAlias
+	Q $This
 }
 
 Method From(pFrom As %String) As gen.SQLBuilder
@@ -192,7 +211,14 @@ Method GetSQL() As %String
 
 Method GetSelectStatement() As %String [ Private ]
 {
-	Set sql = "Select " _ ..Select
+	Set select = ""
+	Set:..Select'="*" $List(select, *+1) = ..Select
+	For k=1:1:..Columns.Count() {
+		Set $List(select, *+1)=..Columns.GetAt(k)
+	}
+	
+	Set sql = "Select " _ $Case($ListLength(select),0: ..Select,:$ListToString(select,","))
+	
 	Set sql = sql _ " From " _ ..From
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy

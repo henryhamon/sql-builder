@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 13:43:32">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 14:29:18">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64307,49240.604425</TimeChanged>
+<TimeChanged>64307,51755.451644</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -46,8 +46,12 @@
 </Property>
 
 <Property name="Columns">
-<Type>%ArrayOfDataTypes</Type>
+<Type>%ListOfDataTypes</Type>
 <Private>1</Private>
+</Property>
+
+<Property name="SubQueryAlias">
+<Type>%String</Type>
 </Property>
 
 <Property name="Statement">
@@ -110,6 +114,29 @@
 <Implementation><![CDATA[
 	Do:((pValue'="")||(pAllowNull=1)) ..AddField(pField, pValue)
 	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Column">
+<FormalSpec>pField,pAlias:%String=""</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set:($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) pField = "("_
+		pField.GetSQL() _ ")" _ 
+		$Case(pField.SubQueryAlias,"":"",:" As " _ pField.SubQueryAlias)
+		
+	Set:pAlias'="" pField = pField _ " As " _ pAlias
+	Do ..Columns.Insert(pField)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="As">
+<FormalSpec>pAlias:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..SubQueryAlias = pAlias
+	Q $This
 ]]></Implementation>
 </Method>
 
@@ -289,7 +316,14 @@
 <Private>1</Private>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
-	Set sql = "Select " _ ..Select
+	Set select = ""
+	Set:..Select'="*" $List(select, *+1) = ..Select
+	For k=1:1:..Columns.Count() {
+		Set $List(select, *+1)=..Columns.GetAt(k)
+	}
+	
+	Set sql = "Select " _ $Case($ListLength(select),0: ..Select,:$ListToString(select,","))
+	
 	Set sql = sql _ " From " _ ..From
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
@@ -433,13 +467,27 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64307,39684.011021</TimeChanged>
+<TimeChanged>64307,52107.531383</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
+
+<Method name="factory">
+<ClassMethod>1</ClassMethod>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[	Quit ##class(gen.SQLBuilder).%New("sample.person")
+]]></Implementation>
+</Method>
 
 <Method name="TestSelect">
 <Implementation><![CDATA[
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person")
 	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person")
+]]></Implementation>
+</Method>
+
+<Method name="TestSelectAll">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Select().From("sample.person")
+	Do ..Is(sqlBuilder.GetSQL(),"Select * From sample.person")
 ]]></Implementation>
 </Method>
 
@@ -515,7 +563,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 <Method name="TestSimpleInsert">
 <Implementation><![CDATA[
 	Set age = $Random(90)+1
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Insert(
+	Set sqlBuilder = ..factory().Insert(
 		).Set("Name", "Nathan Drake"
 		).Set("Age", age)
 	
@@ -525,7 +573,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Method name="TestUpdateSetCase">
 <Implementation><![CDATA[
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Update(
+	Set sqlBuilder = ..factory().Update(
 		).Set("FavoriteColors = (CASE "
 						_"WHEN (Age = 1) THEN 'Red' "
 						_"WHEN (Age = 2) THEN 'Orange' "
@@ -549,12 +597,40 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Method name="TestSubQueryOnWhere">
 <Implementation><![CDATA[
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person"
+	Set sqlBuilder = ..factory(
 		).Select("ID, Name, SSN, Age"
 		).Where("Age =?",##class(gen.SQLBuilder).%New("sample.person"
 			).Select("Age").Where("Name = ?","Luke Skywalker")
 		)
-	D ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+
+	Do ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+]]></Implementation>
+</Method>
+
+<Method name="TestSelectColumn">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory(
+		).Select().Column("ID").Column("Name").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	
+	
+	Set sqlBuilder = ..factory(
+		).Select("ID").Column("Name").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+]]></Implementation>
+</Method>
+
+<Method name="TestSubqueryOnSelect">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory(
+		).Select().Column("ID").Column("Name").Where("Age > ?",10)
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+		
+	Do sqlBuilder.Column(..factory().Select("Age").Where("Age < ?",50).As("Ages"))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
 ]]></Implementation>
 </Method>
 </Class>

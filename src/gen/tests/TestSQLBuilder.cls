@@ -1,10 +1,21 @@
 Class gen.tests.TestSQLBuilder Extends Atomic.UnitTest.TestHelper
 {
 
+ClassMethod factory() As gen.SQLBuilder
+{
+	Quit ##class(gen.SQLBuilder).%New("sample.person")
+}
+
 Method TestSelect()
 {
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person")
 	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person")
+}
+
+Method TestSelectAll()
+{
+	Set sqlBuilder = ..factory().Select().From("sample.person")
+	Do ..Is(sqlBuilder.GetSQL(),"Select * From sample.person")
 }
 
 Method TestWhere()
@@ -72,7 +83,7 @@ Method TestSimpleUpdate()
 Method TestSimpleInsert()
 {
 	Set age = $Random(90)+1
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Insert(
+	Set sqlBuilder = ..factory().Insert(
 		).Set("Name", "Nathan Drake"
 		).Set("Age", age)
 	
@@ -81,7 +92,7 @@ Method TestSimpleInsert()
 
 Method TestUpdateSetCase()
 {
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Update(
+	Set sqlBuilder = ..factory().Update(
 		).Set("FavoriteColors = (CASE "
 						_"WHEN (Age = 1) THEN 'Red' "
 						_"WHEN (Age = 2) THEN 'Orange' "
@@ -105,12 +116,38 @@ Method testIf()
 
 Method TestSubQueryOnWhere()
 {
-	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person"
+	Set sqlBuilder = ..factory(
 		).Select("ID, Name, SSN, Age"
 		).Where("Age =?",##class(gen.SQLBuilder).%New("sample.person"
 			).Select("Age").Where("Name = ?","Luke Skywalker")
 		)
-	D ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+
+	Do ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+}
+
+Method TestSelectColumn()
+{
+	Set sqlBuilder = ..factory(
+		).Select().Column("ID").Column("Name").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	
+	
+	Set sqlBuilder = ..factory(
+		).Select("ID").Column("Name").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+}
+
+Method TestSubqueryOnSelect()
+{
+	Set sqlBuilder = ..factory(
+		).Select().Column("ID").Column("Name").Where("Age > ?",10)
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+		
+	Do sqlBuilder.Column(..factory().Select("Age").Where("Age < ?",50).As("Ages"))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
 }
 
 }
