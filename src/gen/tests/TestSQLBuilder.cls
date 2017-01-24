@@ -103,5 +103,15 @@ Method testIf()
 {
 }
 
+Method TestSubQueryOnWhere()
+{
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person"
+		).Select("ID, Name, SSN, Age"
+		).Where("Age =?",##class(gen.SQLBuilder).%New("sample.person"
+			).Select("Age").Where("Name = ?","Luke Skywalker")
+		)
+	D ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+}
+
 }
 

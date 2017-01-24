@@ -1,7 +1,7 @@
 Class gen.SQLBuilder Extends %RegisteredObject
 {
 
-Parameter Version = "0.0.4";
+Parameter Version = "0.0.5";
 
 Property Select As %String [ InitialExpression = "*", Internal ];
 
@@ -16,6 +16,8 @@ Property GroupBy As %String [ Internal ];
 Property OrderBy As %String [ Internal ];
 
 Property Fields As %ArrayOfDataTypes [ Private ];
+
+Property Columns As %ArrayOfDataTypes [ Private ];
 
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
@@ -120,8 +122,15 @@ ClassMethod GetStringPrepare(args...) As %String [ Private ]
 		Set matcher = $ListFromString(output,"?"), output = ""
 		
 	    For i=1:1:$ListLength(matcher) {
-		    Set got = ""
-		    Set:$Get(args(k))'="" got = sanitize_$Replace(args(k),"'","")_sanitize
+		    Set got = "", arg = $Get(args(k))
+		    
+		    If $IsObject(arg){
+		    	Set:$ClassName(arg)=$ClassName($This) got = "(" _ arg.GetSQL()_")"
+		    } Else {
+		    	Set:arg'="" got = sanitize_$Replace(arg,"'","")_sanitize
+		    }
+		    
+		    
 		    Set output = output _ $List(matcher,i) _ got
 	        Set k = $Increment(k)
 	    }
