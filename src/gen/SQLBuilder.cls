@@ -23,6 +23,8 @@ Property TableAlias As %String [ Private ];
 
 Property UsedAsSubQuery As %Boolean [ InitialExpression = 0, Private ];
 
+Property Union As %String [ Private ];
+
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
 Method SubQueryAlias()
@@ -243,6 +245,7 @@ Method GetSelectStatement() As %String [ Private ]
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
+	Set:..Union'="" sql = sql _ ..Union
 	Quit sql
 }
 
@@ -333,6 +336,18 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
+}
+
+Method Union(pSQL As gen.SQLBuilder) As gen.SQLBuilder
+{
+	Set ..Union = " Union " _ pSQL.GetSQL()
+	Quit $This
+}
+
+Method UnionAll(pSQL As gen.SQLBuilder) As gen.SQLBuilder
+{
+	Set ..Union = " Union All " _ pSQL.GetSQL()
+	Quit $This
 }
 
 }

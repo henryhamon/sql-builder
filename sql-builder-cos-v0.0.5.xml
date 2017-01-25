@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-24 17:28:24">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-25 09:51:07">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64307,62897.344491</TimeChanged>
+<TimeChanged>64308,35436.652809</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -58,6 +58,11 @@
 <Property name="UsedAsSubQuery">
 <Type>%Boolean</Type>
 <InitialExpression>0</InitialExpression>
+<Private>1</Private>
+</Property>
+
+<Property name="Union">
+<Type>%String</Type>
 <Private>1</Private>
 </Property>
 
@@ -355,6 +360,7 @@
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
+	Set:..Union'="" sql = sql _ ..Union
 	Quit sql
 ]]></Implementation>
 </Method>
@@ -471,6 +477,24 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 	Quit tSC
 ]]></Implementation>
 </Method>
+
+<Method name="Union">
+<FormalSpec>pSQL:gen.SQLBuilder</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Union = " Union " _ pSQL.GetSQL()
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="UnionAll">
+<FormalSpec>pSQL:gen.SQLBuilder</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Union = " Union All " _ pSQL.GetSQL()
+	Quit $This
+]]></Implementation>
+</Method>
 </Class>
 
 
@@ -494,7 +518,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64307,61599.678122</TimeChanged>
+<TimeChanged>64308,35381.769044</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="factory">
@@ -681,6 +705,22 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 	).Where("Age > ?",10).As("First")
 
 	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
+]]></Implementation>
+</Method>
+
+<Method name="TestUnion">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Where("Age = ?", 10).Union(..factory().Where("Age = ?", 15))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union Select * From sample.person Where Age = '15'")
+]]></Implementation>
+</Method>
+
+<Method name="TestUnionAll">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Where("Age = ?", 10).UnionAll(..factory().Where("Age = ?", 15))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
 ]]></Implementation>
 </Method>
 </Class>

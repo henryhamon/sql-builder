@@ -172,5 +172,19 @@ Method TestTableAlias()
 	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
 }
 
+Method TestUnion()
+{
+	Set sqlBuilder = ..factory().Where("Age = ?", 10).Union(..factory().Where("Age = ?", 15))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union Select * From sample.person Where Age = '15'")
+}
+
+Method TestUnionAll()
+{
+	Set sqlBuilder = ..factory().Where("Age = ?", 10).UnionAll(..factory().Where("Age = ?", 15))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
+}
+
 }
 
