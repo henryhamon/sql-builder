@@ -82,6 +82,12 @@ Method Set(pField As %String, pValue As %String = "", pAllowNull As %Boolean = 0
 	Quit $This
 }
 
+Method SetIf(pCondition As %Boolean, args...) As gen.SQLBuilder
+{
+	Quit:pCondition ..Set(args...)
+	Quit $This
+}
+
 Method Column(pField, pAlias As %String = "") As gen.SQLBuilder
 {
 	

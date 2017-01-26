@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-26 10:12:23">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-26 11:15:30">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64309,36540.377656</TimeChanged>
+<TimeChanged>64309,39510.89439</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -142,6 +142,15 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do:((pValue'="")||(pAllowNull=1)) ..AddField(pField, pValue)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="SetIf">
+<FormalSpec>pCondition:%Boolean,args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Quit:pCondition ..Set(args...)
 	Quit $This
 ]]></Implementation>
 </Method>
@@ -620,7 +629,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64309,36724.476881</TimeChanged>
+<TimeChanged>64309,40520.607403</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="factory">
@@ -956,6 +965,39 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 					).Select("Person").As("C") ,"P.ID","C.Person")
 		
 	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestUpdate">
+<Implementation><![CDATA[
+	Set id = $Random(10)+1, name = "John Snow",	
+		sql = "Update sample.person SET Name = '"_name_"' "_
+				"Where Id = '"_id_"'",				
+		sqlBuilder = ..factory().Update(
+			).Set("Name", name
+			).Where("Id = ?",id	)
+			
+	Do ..Is(sqlBuilder.GetSQL(),sql)
+]]></Implementation>
+</Method>
+
+<Method name="TestUpdateSetIf">
+<Implementation><![CDATA[
+	Set id = 5, name = "John Snow",	
+		sql1 = "Update sample.person SET Name = '"_name_"' Where Id = '5'",		
+		sql2 = "Update sample.person SET Age = '30', Name = '"_name_"' Where Id = '6'",
+		sqlBuilder1 = ..factory().Update(
+			).Set("Name", name
+			).SetIf( id>5, "Age", 30
+			).Where("Id = ?",id), 
+		id = 6,
+		sqlBuilder2 = ..factory().Update(
+			).Set("Name", name
+			).SetIf( id>5, "Age", 30
+			).Where("Id = ?",id)
+			
+	Do ..Is(sqlBuilder1.GetSQL(),sql1)
+	Do ..Is(sqlBuilder2.GetSQL(),sql2)
 ]]></Implementation>
 </Method>
 </Class>

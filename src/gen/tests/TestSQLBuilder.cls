@@ -310,5 +310,36 @@ Method TestJoinSubQuery()
 	Do ..Is(sqlBuilder.GetSQL(),join)
 }
 
+Method TestUpdate()
+{
+	Set id = $Random(10)+1, name = "John Snow",	
+		sql = "Update sample.person SET Name = '"_name_"' "_
+				"Where Id = '"_id_"'",				
+		sqlBuilder = ..factory().Update(
+			).Set("Name", name
+			).Where("Id = ?",id	)
+			
+	Do ..Is(sqlBuilder.GetSQL(),sql)
+}
+
+Method TestUpdateSetIf()
+{
+	Set id = 5, name = "John Snow",	
+		sql1 = "Update sample.person SET Name = '"_name_"' Where Id = '5'",		
+		sql2 = "Update sample.person SET Age = '30', Name = '"_name_"' Where Id = '6'",
+		sqlBuilder1 = ..factory().Update(
+			).Set("Name", name
+			).SetIf( id>5, "Age", 30
+			).Where("Id = ?",id), 
+		id = 6,
+		sqlBuilder2 = ..factory().Update(
+			).Set("Name", name
+			).SetIf( id>5, "Age", 30
+			).Where("Id = ?",id)
+			
+	Do ..Is(sqlBuilder1.GetSQL(),sql1)
+	Do ..Is(sqlBuilder2.GetSQL(),sql2)
+}
+
 }
 
