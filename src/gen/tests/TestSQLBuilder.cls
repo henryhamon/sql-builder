@@ -186,5 +186,129 @@ Method TestUnionAll()
 	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
 }
 
+Method TestJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Inner Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).Join("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+	
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).InnerJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestLeftJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestLeftOuterJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestOuterJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).OuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestCrossJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Cross Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).CrossJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestRightJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestRightOuterJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestFullOuterJoin()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Full Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).FullOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
+Method TestJoinSubQuery()
+{
+	Set join = "Select P.ID, P.Name, P.SSN "_
+		"From sample.person As P "_
+		"Inner Join (Select Person From sample.contact) As C On P.ID = C.Person"
+	
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN"
+		).Join( ##class(gen.SQLBuilder).%New("sample.contact"
+					).Select("Person").As("C") ,"P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+}
+
 }
 

@@ -25,6 +25,8 @@ Property UsedAsSubQuery As %Boolean [ InitialExpression = 0, Private ];
 
 Property Union As %String [ Private ];
 
+Property Join As %ListOfDataTypes [ Private ];
+
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
 Method SubQueryAlias()
@@ -143,8 +145,70 @@ Method Between(pProp, pInferior, pSuperior, pType = 0) As gen.SQLBuilder
 	Quit ..WhereInterno(sql)
 }
 
-Method Join(table As %String, prop As %String) As gen.SQLBuilder
+Method Join(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
+	Quit ..InnerJoin(pTable, pFirst, pSecond)
+}
+
+Method InnerJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Inner",pTable, pFirst, pSecond))
+	Quit $This
+}
+
+Method LeftJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond))
+	Q $This
+}
+
+Method LeftOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond))
+	Q $This
+}
+
+Method RightJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond))
+	Q $This
+}
+
+Method RightOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond))
+	Q $This
+}
+
+Method OuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond))
+	Q $This
+}
+
+Method FullOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond))
+	Q $This
+}
+
+Method CrossJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond))
+	Q $This
+}
+
+ClassMethod JoinPrepare(pJoinSyntax As %String, pTable, pFirst As %String, pSecond As %String) As %String [ Private ]
+{
+	If $IsObject(pTable) {
+		If $ClassName(pTable)=$ClassName($This) {
+			Do pTable.IsSubQuery()
+			Set pTable = "("_ pTable.GetSQL() _ ")" _ 
+				$Case(pTable.SubQueryAlias(),"":"",:" As " _ pTable.SubQueryAlias())
+		}	
+	}
+	
+	Quit pJoinSyntax _ " Join "_ pTable _" On "_ pFirst _ " = " _ pSecond
 }
 
 ClassMethod GetStringPrepare(args...) As %String [ Private ]
@@ -243,6 +307,11 @@ Method GetSelectStatement() As %String [ Private ]
 	
 	Set sql = sql _ " From " _ from
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
+	
+	For k=1:1:..Join.Count() {
+		Set sql = sql _ " " _ ..Join.GetAt(k)
+	}
+	
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
 	Set:..Union'="" sql = sql _ ..Union

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-25 09:51:07">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-26 10:12:23">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64308,35436.652809</TimeChanged>
+<TimeChanged>64309,36540.377656</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -63,6 +63,11 @@
 
 <Property name="Union">
 <Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Join">
+<Type>%ListOfDataTypes</Type>
 <Private>1</Private>
 </Property>
 
@@ -231,8 +236,100 @@
 </Method>
 
 <Method name="Join">
-<FormalSpec>table:%String,prop:%String</FormalSpec>
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
 <ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[	Quit ..InnerJoin(pTable, pFirst, pSecond)
+]]></Implementation>
+</Method>
+
+<Method name="InnerJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Inner",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="LeftJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="LeftOuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="RightJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="RightOuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="OuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="FullOuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="CrossJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond))
+	Q $This
+]]></Implementation>
+</Method>
+
+<Method name="JoinPrepare">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJoinSyntax:%String,pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	If $IsObject(pTable) {
+		If $ClassName(pTable)=$ClassName($This) {
+			Do pTable.IsSubQuery()
+			Set pTable = "("_ pTable.GetSQL() _ ")" _ 
+				$Case(pTable.SubQueryAlias(),"":"",:" As " _ pTable.SubQueryAlias())
+		}	
+	}
+	
+	Quit pJoinSyntax _ " Join "_ pTable _" On "_ pFirst _ " = " _ pSecond
+]]></Implementation>
 </Method>
 
 <Method name="GetStringPrepare">
@@ -358,6 +455,11 @@
 	
 	Set sql = sql _ " From " _ from
 	Set:..Where'="" sql = sql _ " Where " _ ..Where
+	
+	For k=1:1:..Join.Count() {
+		Set sql = sql _ " " _ ..Join.GetAt(k)
+	}
+	
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
 	Set:..Union'="" sql = sql _ ..Union
@@ -518,7 +620,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64308,35381.769044</TimeChanged>
+<TimeChanged>64309,36724.476881</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="factory">
@@ -721,6 +823,139 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 	Set sqlBuilder = ..factory().Where("Age = ?", 10).UnionAll(..factory().Where("Age = ?", 15))
 	
 	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
+]]></Implementation>
+</Method>
+
+<Method name="TestJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Inner Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).Join("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+	
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).InnerJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestLeftJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestLeftOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).OuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestCrossJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Cross Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).CrossJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestRightJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestRightOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestFullOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Full Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).FullOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestJoinSubQuery">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN "_
+		"From sample.person As P "_
+		"Inner Join (Select Person From sample.contact) As C On P.ID = C.Person"
+	
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN"
+		).Join( ##class(gen.SQLBuilder).%New("sample.contact"
+					).Select("Person").As("C") ,"P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
 ]]></Implementation>
 </Method>
 </Class>
