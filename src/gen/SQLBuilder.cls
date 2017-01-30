@@ -27,6 +27,8 @@ Property Union As %String [ Private ];
 
 Property Join As %ListOfDataTypes [ Private ];
 
+Property Having As %String [ Private ];
+
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
 
 Method SubQueryAlias()
@@ -165,43 +167,43 @@ Method InnerJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilde
 Method LeftJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 Method LeftOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 Method RightJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 Method RightOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 Method OuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 Method FullOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 Method CrossJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 {
 	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 }
 
 ClassMethod JoinPrepare(pJoinSyntax As %String, pTable, pFirst As %String, pSecond As %String) As %String [ Private ]
@@ -319,6 +321,7 @@ Method GetSelectStatement() As %String [ Private ]
 	}
 	
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
+	Set:..Having'="" sql = sql _ " Having " _ ..Having
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
 	Set:..Union'="" sql = sql _ ..Union
 	Quit sql
@@ -384,7 +387,7 @@ Method AddField(pField, pValue = "") As %Status
 	Quit tSC
 }
 
-Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status
+Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status [ Private ]
 {
 	Set tSC = $$$OK
 	Try {
@@ -422,6 +425,33 @@ Method Union(pSQL As gen.SQLBuilder) As gen.SQLBuilder
 Method UnionAll(pSQL As gen.SQLBuilder) As gen.SQLBuilder
 {
 	Set ..Union = " Union All " _ pSQL.GetSQL()
+	Quit $This
+}
+
+Method HavingInternal(pHaving As %String, pAndOr = 0) As gen.SQLBuilder [ Internal, Private ]
+{
+	If ..Having=""{
+		Set ..Having = pHaving
+	} Else {
+		Set:..Having'="" ..Having = ..Having _ $Case(pAndOr,0:" AND ",1:" OR ") _ pHaving
+	}
+	Quit $This
+}
+
+Method Having(args...) As gen.SQLBuilder
+{
+	If $IsObject(args(2)) {
+		If $ClassName(args(2))=$ClassName($This) {
+			Do args(2).IsSubQuery()
+			Set args(2) = "("_ args(2).GetSQL() _ ")" _ 
+				$Case(args(2).SubQueryAlias(),"":"",:" As " _ args(1).SubQueryAlias())
+		}	
+	}
+	
+	Set result = ..GetStringPrepare(args...)
+	Quit:result="" $This
+	Quit ..HavingInternal(result)
+	
 	Quit $This
 }
 

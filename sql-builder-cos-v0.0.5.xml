@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-26 11:15:30">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-01-30 16:55:49">
 <Class name="gen.SQLBuilder">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64309,39510.89439</TimeChanged>
+<TimeChanged>64313,60712.194051</TimeChanged>
 <TimeCreated>64174,51856.58627</TimeCreated>
 
 <Parameter name="Version">
@@ -68,6 +68,11 @@
 
 <Property name="Join">
 <Type>%ListOfDataTypes</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Having">
+<Type>%String</Type>
 <Private>1</Private>
 </Property>
 
@@ -265,7 +270,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -274,7 +279,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -283,7 +288,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -292,7 +297,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -301,7 +306,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -310,7 +315,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -319,7 +324,7 @@
 <ReturnType>gen.SQLBuilder</ReturnType>
 <Implementation><![CDATA[
 	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond))
-	Q $This
+	Quit $This
 ]]></Implementation>
 </Method>
 
@@ -470,6 +475,7 @@
 	}
 	
 	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
+	Set:..Having'="" sql = sql _ " Having " _ ..Having
 	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
 	Set:..Union'="" sql = sql _ ..Union
 	Quit sql
@@ -559,6 +565,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Method name="AbstractGetFieldsBlock">
 <FormalSpec>*pQueryBlock</FormalSpec>
+<Private>1</Private>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	Set tSC = $$$OK
@@ -606,6 +613,41 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 	Quit $This
 ]]></Implementation>
 </Method>
+
+<Method name="HavingInternal">
+<Internal>1</Internal>
+<FormalSpec>pHaving:%String,pAndOr=0</FormalSpec>
+<Private>1</Private>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	If ..Having=""{
+		Set ..Having = pHaving
+	} Else {
+		Set:..Having'="" ..Having = ..Having _ $Case(pAndOr,0:" AND ",1:" OR ") _ pHaving
+	}
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Having">
+<FormalSpec>args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	If $IsObject(args(2)) {
+		If $ClassName(args(2))=$ClassName($This) {
+			Do args(2).IsSubQuery()
+			Set args(2) = "("_ args(2).GetSQL() _ ")" _ 
+				$Case(args(2).SubQueryAlias(),"":"",:" As " _ args(1).SubQueryAlias())
+		}	
+	}
+	
+	Set result = ..GetStringPrepare(args...)
+	Quit:result="" $This
+	Quit ..HavingInternal(result)
+	
+	Quit $This
+]]></Implementation>
+</Method>
 </Class>
 
 
@@ -629,7 +671,7 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 
 <Class name="gen.tests.TestSQLBuilder">
 <Super>Atomic.UnitTest.TestHelper</Super>
-<TimeChanged>64309,40520.607403</TimeChanged>
+<TimeChanged>64313,60892.939105</TimeChanged>
 <TimeCreated>64208,34376.492281</TimeCreated>
 
 <Method name="factory">
@@ -998,6 +1040,18 @@ This method is just to insert on %ArrayOfDataTypes property using Key and Value.
 			
 	Do ..Is(sqlBuilder1.GetSQL(),sql1)
 	Do ..Is(sqlBuilder2.GetSQL(),sql2)
+]]></Implementation>
+</Method>
+
+<Method name="TestHaving">
+<Implementation><![CDATA[
+	Set sql = "Select Count(1) As Elders,Age From sample.person Group By Age Having Age > '50'",		
+		sqlBuilder = ..factory().Select("Count(1) As Elders"
+			).Column("Age"
+			).GroupBy("Age"
+			).Having("Age > ?",50)
+			
+	Do ..Is(sqlBuilder.GetSQL(),sql)
 ]]></Implementation>
 </Method>
 </Class>

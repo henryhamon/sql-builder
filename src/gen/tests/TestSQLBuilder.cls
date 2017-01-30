@@ -341,5 +341,16 @@ Method TestUpdateSetIf()
 	Do ..Is(sqlBuilder2.GetSQL(),sql2)
 }
 
+Method TestHaving()
+{
+	Set sql = "Select Count(1) As Elders,Age From sample.person Group By Age Having Age > '50'",		
+		sqlBuilder = ..factory().Select("Count(1) As Elders"
+			).Column("Age"
+			).GroupBy("Age"
+			).Having("Age > ?",50)
+			
+	Do ..Is(sqlBuilder.GetSQL(),sql)
+}
+
 }
 
