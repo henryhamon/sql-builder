@@ -349,7 +349,7 @@ Method TestHaving()
 			).GroupBy("Age"
 			).Having("Age > ?",50)
 			
-	Do ..Is(sqlBuilder.GetSQL(),sql)
+	Do ..Exactly(sqlBuilder.GetSQL(),sql)
 }
 
 }
