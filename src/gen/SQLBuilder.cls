@@ -3,6 +3,8 @@ Class gen.SQLBuilder Extends %RegisteredObject
 
 Parameter Version = "0.1.0";
 
+Parameter Codename = "Black Sails";
+
 Property Select As %String [ InitialExpression = "*", Internal ];
 
 Property Update As %String [ Internal ];
