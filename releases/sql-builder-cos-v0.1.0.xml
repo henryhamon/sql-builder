@@ -1,0 +1,1155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.2.1 (Build 705U)" ts="2017-02-01 17:40:25">
+<Class name="gen.SQLBuilder">
+<Super>%RegisteredObject</Super>
+<TimeChanged>64315,63610.778749</TimeChanged>
+<TimeCreated>64174,51856.58627</TimeCreated>
+
+<Parameter name="Version">
+<Default>0.1.0</Default>
+</Parameter>
+
+<Property name="Select">
+<Type>%String</Type>
+<Internal>1</Internal>
+<InitialExpression>"*"</InitialExpression>
+</Property>
+
+<Property name="Update">
+<Type>%String</Type>
+<Internal>1</Internal>
+</Property>
+
+<Property name="From">
+<Type>%String</Type>
+<Internal>1</Internal>
+</Property>
+
+<Property name="Where">
+<Type>%String</Type>
+<Internal>1</Internal>
+</Property>
+
+<Property name="GroupBy">
+<Type>%String</Type>
+<Internal>1</Internal>
+</Property>
+
+<Property name="OrderBy">
+<Type>%String</Type>
+<Internal>1</Internal>
+</Property>
+
+<Property name="Fields">
+<Type>%ArrayOfDataTypes</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Columns">
+<Type>%ListOfDataTypes</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="TableAlias">
+<Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="UsedAsSubQuery">
+<Type>%Boolean</Type>
+<InitialExpression>0</InitialExpression>
+<Private>1</Private>
+</Property>
+
+<Property name="Union">
+<Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Join">
+<Type>%ListOfDataTypes</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Having">
+<Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Statement">
+<Type>%Integer</Type>
+<Internal>1</Internal>
+<InitialExpression>1</InitialExpression>
+<Parameter name="DISPLAYLIST" value=",Select,Update,Insert,Delete"/>
+<Parameter name="VALUELIST" value=",1,2,3,4"/>
+</Property>
+
+<Property name="ByParams">
+<Type>%Boolean</Type>
+<InitialExpression>0</InitialExpression>
+<Private>1</Private>
+</Property>
+
+<Property name="SQLStatement">
+<Type>%SQL.Statement</Type>
+</Property>
+
+<Property name="WasPreperedBefore">
+<Type>%Boolean</Type>
+<InitialExpression>0</InitialExpression>
+<Private>1</Private>
+</Property>
+
+<Method name="SubQueryAlias">
+<Implementation><![CDATA[
+	Do ..IsSubQuery()
+	Quit ..TableAlias
+]]></Implementation>
+</Method>
+
+<Method name="IsSubQuery">
+<Implementation><![CDATA[	Set ..UsedAsSubQuery = $$$YES
+]]></Implementation>
+</Method>
+
+<Method name="Delete">
+<FormalSpec>params:%String=""</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Select = ""
+	Set ..Update = ""
+	Set ..Statement = 4
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Select">
+<FormalSpec>params:%String=""</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	If params'="" {
+		Set auxList = $ListFromString(params,",")
+		Set select = ""
+		For k=1:1:$ListLength(auxList) {
+			Set:$List(auxList,k)'="" $List(select,*+1) = $List(auxList,k)
+		}
+		Set ..Select = $ListToString(select,",")
+	}
+	Set ..Statement = 1
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Update">
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Select = ""
+	Set ..Statement = 2
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Insert">
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Select = ""
+	Set ..Statement = 3
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Set">
+<FormalSpec>pField:%String,pValue:%String="",pAllowNull:%Boolean=0</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do:((pValue'="")||(pAllowNull=$$$YES)||(..ByParams=$$$YES)) ..AddField(pField, pValue)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="SetIf">
+<FormalSpec>pCondition:%Boolean,args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Quit:pCondition ..Set(args...)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Column">
+<FormalSpec>pField,pAlias:%String=""</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	
+	If ($IsObject(pField)&&($ClassName(pField)=$ClassName($This))) {
+		Do pField.IsSubQuery()
+		Set pField = "("_ pField.GetSQL() _ ")" _ 
+			$Case(pField.SubQueryAlias(),"":"",:" As " _ pField.SubQueryAlias())
+	}
+		
+	Set:pAlias'="" pField = pField _ " As " _ pAlias
+	Do ..Columns.Insert(pField)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="As">
+<FormalSpec>pAlias:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..TableAlias = pAlias
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="From">
+<FormalSpec>pFrom:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..From = pFrom
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Where">
+<FormalSpec>args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set result = ..GetStringPrepare(args...)
+	Quit:result="" $This
+	Quit ..WhereInterno(result)
+]]></Implementation>
+</Method>
+
+<Method name="WhereInterno">
+<Internal>1</Internal>
+<FormalSpec>pWhere:%String,pAndOr=0</FormalSpec>
+<Private>1</Private>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	If ..Where=""{
+		Set ..Where = pWhere
+	} Else {
+		Set:..Where'="" ..Where = ..Where _ $Case(pAndOr,0:" AND ",1:" OR ") _ pWhere
+	}
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Or">
+<FormalSpec>args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set result = ..GetStringPrepare(args...)
+	Quit:result="" $This
+	Quit ..WhereInterno(result,1)
+]]></Implementation>
+</Method>
+
+<Method name="And">
+<FormalSpec>args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set result = ..GetStringPrepare(args...)
+	Quit:result="" $This
+	Quit ..WhereInterno(result)
+]]></Implementation>
+</Method>
+
+<Method name="Between">
+<FormalSpec>pProp,pInferior,pSuperior,pType=0</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set sql = "(" _ pProp _ " BETWEEN " _ pInferior _ " AND " _ pSuperior _ ")"
+	Quit ..WhereInterno(sql)
+]]></Implementation>
+</Method>
+
+<Method name="Join">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[	Quit ..InnerJoin(pTable, pFirst, pSecond)
+]]></Implementation>
+</Method>
+
+<Method name="InnerJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Inner",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="LeftJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="LeftOuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="RightJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="RightOuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="OuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="FullOuterJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="CrossJoin">
+<FormalSpec>pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond))
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="JoinPrepare">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pJoinSyntax:%String,pTable,pFirst:%String,pSecond:%String</FormalSpec>
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	If $IsObject(pTable) {
+		If $ClassName(pTable)=$ClassName($This) {
+			Do pTable.IsSubQuery()
+			Set pTable = "("_ pTable.GetSQL() _ ")" _ 
+				$Case(pTable.SubQueryAlias(),"":"",:" As " _ pTable.SubQueryAlias())
+		}	
+	}
+	
+	Quit pJoinSyntax _ " Join "_ pTable _" On "_ pFirst _ " = " _ pSecond
+]]></Implementation>
+</Method>
+
+<Method name="GetStringPrepare">
+<FormalSpec>args...</FormalSpec>
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set output = ""
+	Quit:..ByParams=$$$YES $Get(args(1))
+	
+	Try {
+		Set output = $Get(args(1))
+		
+		Set k = 2, sanitize = "'"
+		
+		Set:$Find($ZConvert(output,"U"),"LIKE")>0 sanitize = "#"
+		Set matcher = $ListFromString(output,"?"), output = ""
+		
+	    For i=1:1:$ListLength(matcher) {
+		    Set got = "", arg = $Get(args(k))
+		    
+		    If $IsObject(arg){
+		    	Set:$ClassName(arg)=$ClassName($This) got = "(" _ arg.GetSQL()_")"
+		    } Else {
+		    	Set:arg'="" got = sanitize_$Replace(arg,"'","")_sanitize
+		    }
+		    
+		    
+		    Set output = output _ $List(matcher,i) _ got
+	        Set k = $Increment(k)
+	    }
+	    
+	    Set:$Find(output,"''")>0 output = ""
+	    Set:$Find(output,"##")>0 output = ""
+	    Set:output'="" output = $Replace(output,"#","")
+		
+	} Catch {
+		Set output = ""
+	}
+	Quit output
+]]></Implementation>
+</Method>
+
+<Method name="Order">
+<FormalSpec>pOrderBy:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..OrderBy = ""
+	Quit ..OrderBy(pOrderBy)
+]]></Implementation>
+</Method>
+
+<Method name="OrderBy">
+<FormalSpec>pOrderBy:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set:..OrderBy'="" ..OrderBy = ..OrderBy _ "," _ pOrderBy
+	Set:..OrderBy="" ..OrderBy = pOrderBy
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="GroupBy">
+<FormalSpec>pGroupBy:%String</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set:..GroupBy'="" ..GroupBy = ..GroupBy _ "," _ pGroupBy
+	Set:..GroupBy="" ..GroupBy = pGroupBy
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="AndIf">
+<FormalSpec>pCondition,args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Quit:pCondition ..And(args...)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="OrIf">
+<FormalSpec>pCondition,args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Quit:pCondition ..Or(args...)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="WhereIf">
+<FormalSpec>pCondition,args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Quit:pCondition ..Where(args...)
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="GetSQL">
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Quit:..Statement=1 ..GetSelectStatement()
+	Quit:..Statement=2 ..GetUpdateStatement()
+	Quit:..Statement=3 ..GetInsertStatement()
+	Quit:..Statement=4 ..GetDeleteStatement()
+]]></Implementation>
+</Method>
+
+<Method name="GetSelectStatement">
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set select = ""
+	Set:..Select'="*" $List(select, *+1) = ..Select
+	For k=1:1:..Columns.Count() {
+		Set $List(select, *+1)=..Columns.GetAt(k)
+	}
+	
+	Set sql = "Select " _ $Case($ListLength(select),0: ..Select,:$ListToString(select,","))
+	
+	Set from = ..From
+	Set:((..TableAlias'="")&&(..UsedAsSubQuery=$$$NO)) from = from _ " As "_..TableAlias
+	
+	Set sql = sql _ " From " _ from
+	Set:..Where'="" sql = sql _ " Where " _ ..Where
+	
+	For k=1:1:..Join.Count() {
+		Set sql = sql _ " " _ ..Join.GetAt(k)
+	}
+	
+	Set:..GroupBy'="" sql = sql _ " Group By " _ ..GroupBy
+	Set:..Having'="" sql = sql _ " Having " _ ..Having
+	Set:..OrderBy'="" sql = sql _ " Order By " _ ..OrderBy
+	Set:..Union'="" sql = sql _ ..Union
+	Quit sql
+]]></Implementation>
+</Method>
+
+<Method name="GetDeleteStatement">
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set sql = "Delete "
+	Set sql = sql _ " From " _ ..From
+	Set:..Where'="" sql = sql _ " Where " _ ..Where
+	Quit sql
+]]></Implementation>
+</Method>
+
+<Method name="GetUpdateStatement">
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set sql = "Update " _ ..From 
+	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
+	Set sql = sql _ setFieldsStatement
+	Set:..Where'="" sql = sql _ " Where " _ ..Where
+	Quit sql
+]]></Implementation>
+</Method>
+
+<Method name="GetInsertStatement">
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set sql = "Insert INTO " _ ..From _ " "
+	Do ..AbstractGetFieldsBlock(.setFieldsStatement)
+	Set sql = sql _ setFieldsStatement
+	Write sql,!
+	Quit sql
+]]></Implementation>
+</Method>
+
+<Method name="Prepare">
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set ..SQLStatement = ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, ..SQLStatement.%Prepare(..GetSQL()))
+		Set ..WasPreperedBefore = $$$YES
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Execute">
+<FormalSpec>*tSC:%Status="",Args...</FormalSpec>
+<ReturnType>%ResultSet</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, tRS = ""
+	Try {
+		
+		If ..WasPreperedBefore=$$$NO {
+			$$$THROWONERROR(tSC, ..Prepare())
+		}
+		
+		Set tRS = ..SQLStatement.%Execute(Args...)
+	}
+	Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tRS
+]]></Implementation>
+</Method>
+
+<Method name="%OnNew">
+<FormalSpec>table:%String=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set ..From = table
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="AddField">
+<Description><![CDATA[
+This method is just to insert on %ArrayOfDataTypes property using Key and Value. <br>
+'Cos caché set array inverse (Value, Key)...]]></Description>
+<FormalSpec>pField,pValue=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ..Fields.SetAt(pValue, pField))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="AbstractGetFieldsBlock">
+<FormalSpec>*pQueryBlock</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set into = "", field = ..Fields.Next("")
+		
+		While field'="" {
+			Set updateAttr = " = ?"
+			Set:((..ByParams=$$$NO)&&(..Fields.GetAt(field)="")) updateAttr = ""
+			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ updateAttr, ..Fields.GetAt(field)) //Update
+			Kill updateAttr
+			
+			If ..Statement=3 { // Insert
+				Set $List(into, *+1) = field 
+				Set $List(values, *+1) = ..GetStringPrepare("?",..Fields.GetAt(field))
+			}
+
+			Set field = ..Fields.Next(field)
+			
+			S ^CacheTemp.ham($I(^CacheTemp.ham),"into") = into
+			S ^CacheTemp.ham($I(^CacheTemp.ham),"values") = values
+		}
+		
+		Set:..Statement=2 pQueryBlock = " SET " _ $ListToString(into,", ")
+		Set:..Statement=3 pQueryBlock = " (" _ $ListToString(into,", ")_") VALUES ("_$ListToString(values,", ")_" )"
+
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Union">
+<FormalSpec>pSQL:gen.SQLBuilder</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Union = " Union " _ pSQL.GetSQL()
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="UnionAll">
+<FormalSpec>pSQL:gen.SQLBuilder</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..Union = " Union All " _ pSQL.GetSQL()
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="HavingInternal">
+<Internal>1</Internal>
+<FormalSpec>pHaving:%String,pAndOr=0</FormalSpec>
+<Private>1</Private>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	If ..Having=""{
+		Set ..Having = pHaving
+	} Else {
+		Set:..Having'="" ..Having = ..Having _ $Case(pAndOr,0:" AND ",1:" OR ") _ pHaving
+	}
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="Having">
+<FormalSpec>args...</FormalSpec>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	If $IsObject(args(2)) {
+		If $ClassName(args(2))=$ClassName($This) {
+			Do args(2).IsSubQuery()
+			Set args(2) = "("_ args(2).GetSQL() _ ")" _ 
+				$Case(args(2).SubQueryAlias(),"":"",:" As " _ args(1).SubQueryAlias())
+		}	
+	}
+	
+	Set result = ..GetStringPrepare(args...)
+	Quit:result="" $This
+	Quit ..HavingInternal(result)
+	
+	Quit $This
+]]></Implementation>
+</Method>
+
+<Method name="ByParams">
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[
+	Set ..ByParams = $$$YES
+	Quit $This
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="gen.tests.Suite">
+<Super>Atomic.UnitTest.TestSuite</Super>
+<TimeChanged>64208,34392.509422</TimeChanged>
+<TimeCreated>64208,32695.561845</TimeCreated>
+
+<Parameter name="DESTROYTESTLOGS">
+<Default>1</Default>
+</Parameter>
+
+<Method name="Package">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit "gen.tests"
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="gen.tests.TestSQLBuilder">
+<Super>Atomic.UnitTest.TestHelper</Super>
+<TimeChanged>64315,63593.256396</TimeChanged>
+<TimeCreated>64208,34376.492281</TimeCreated>
+
+<Method name="factory">
+<ClassMethod>1</ClassMethod>
+<ReturnType>gen.SQLBuilder</ReturnType>
+<Implementation><![CDATA[	Quit ##class(gen.SQLBuilder).%New("sample.person")
+]]></Implementation>
+</Method>
+
+<Method name="TestSelect">
+<Implementation><![CDATA[
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person")
+	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person")
+]]></Implementation>
+</Method>
+
+<Method name="TestSelectAll">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Select().From("sample.person")
+	Do ..Is(sqlBuilder.GetSQL(),"Select * From sample.person")
+]]></Implementation>
+</Method>
+
+<Method name="TestWhere">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person"
+		).Where("Name %STARSTSWITH ?","Jo")
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'")
+]]></Implementation>
+</Method>
+
+<Method name="TestOrderBy">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person"
+		).Order("Name")
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN From sample.person Order By Name")
+]]></Implementation>
+</Method>
+
+<Method name="TestBetween">
+<Implementation><![CDATA[
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
+		).Between("Age",10,50)
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50)")
+]]></Implementation>
+</Method>
+
+<Method name="TestAndCondition">
+<Implementation><![CDATA[
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
+		).Between("Age",10,50).And("Name %STARSTSWITH ?","Jo")
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50) AND Name %STARSTSWITH 'Jo'")
+]]></Implementation>
+</Method>
+
+<Method name="TestComplexWhere">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
+		).Where("Age In (?,?,?,?)",10,20,30,40)
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age In ('10','20','30','40')")
+]]></Implementation>
+</Method>
+
+<Method name="TestFixedArgument">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
+		).Where("Age = 10")
+		
+	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age = 10")
+]]></Implementation>
+</Method>
+
+<Method name="TestSimpleUpdate">
+<Implementation><![CDATA[
+	Set age = $Random(90)+1
+	Set sqlBuilder = ##class(gen.SQLBuilder).%New("sample.person").Update(
+		).Set("Name", "Nathan Drake"
+		).Set("Age", age).Where("ID = ?",10)
+	
+	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET Age = '"_age_"', Name = 'Nathan Drake' Where ID = '10'")
+]]></Implementation>
+</Method>
+
+<Method name="TestSimpleInsert">
+<Implementation><![CDATA[
+	Set age = $Random(90)+1
+	Set sqlBuilder = ..factory().Insert(
+		).Set("Name", "Nathan Drake"
+		).Set("Age", age)
+	
+	Do ..Eql(sqlBuilder.GetSQL(),"Insert INTO sample.person  (Age, Name) VALUES ('"_age_"', 'Nathan Drake' )")
+]]></Implementation>
+</Method>
+
+<Method name="TestUpdateSetCase">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Update(
+		).Set("FavoriteColors = (CASE "
+						_"WHEN (Age = 1) THEN 'Red' "
+						_"WHEN (Age = 2) THEN 'Orange' "
+						_"WHEN (Age = 3) THEN 'Yellow' "
+						_"WHEN (Age = 4) THEN 'Green' "
+						_"WHEN (Age = 5) THEN 'Blue' "
+						_"WHEN (Age = 6) THEN 'Purple' END)",,$$$YES)
+	
+	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET FavoriteColors = (CASE "
+						_"WHEN (Age = 1) THEN 'Red' "
+						_"WHEN (Age = 2) THEN 'Orange' "
+						_"WHEN (Age = 3) THEN 'Yellow' "
+						_"WHEN (Age = 4) THEN 'Green' "
+						_"WHEN (Age = 5) THEN 'Blue' "
+						_"WHEN (Age = 6) THEN 'Purple' END)")
+]]></Implementation>
+</Method>
+
+<Method name="testIf">
+</Method>
+
+<Method name="TestSubQueryOnWhere">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory(
+		).Select("ID, Name, SSN, Age"
+		).Where("Age =?",##class(gen.SQLBuilder).%New("sample.person"
+			).Select("Age").Where("Name = ?","Luke Skywalker")
+		)
+
+	Do ..Is(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+]]></Implementation>
+</Method>
+
+<Method name="TestSelectColumn">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory(
+		).Select().Column("ID").Column("Name").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	
+	
+	Set sqlBuilder = ..factory(
+		).Select("ID").Column("Name").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	
+	
+	Set sqlBuilder = ..factory(
+		).Select("ID").Column("Name").Column("Age","Ages").Where("Age > ?",10)
+		
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,Age As Ages From sample.person Where Age > '10'" )
+]]></Implementation>
+</Method>
+
+<Method name="TestSubqueryOnSelect">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory(
+		).Select().Column("ID").Column("Name").Where("Age > ?",10)
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+		
+	Do sqlBuilder.Column(..factory().Select("Age").Where("Age < ?",50).As("Ages"))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+]]></Implementation>
+</Method>
+
+<Method name="TestTableAlias">
+<Implementation><![CDATA[
+	
+	Set sqlBuilder = ..factory().Column("ID"
+		).Column( ..factory().Select("Age").Where("Age < ?",50).As("Ages")
+	).Where("Age > ?",10)
+
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+	
+	Set sqlBuilder = ..factory().Column("ID"
+		).Column(..factory().Select("Age").Where("Age < ?",50).As("Ages")
+	).Where("Age > ?",10).As("First")
+
+	Do ..Is(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
+]]></Implementation>
+</Method>
+
+<Method name="TestUnion">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Where("Age = ?", 10).Union(..factory().Where("Age = ?", 15))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union Select * From sample.person Where Age = '15'")
+]]></Implementation>
+</Method>
+
+<Method name="TestUnionAll">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().Where("Age = ?", 10).UnionAll(..factory().Where("Age = ?", 15))
+	
+	Do ..Is(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
+]]></Implementation>
+</Method>
+
+<Method name="TestJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Inner Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).Join("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+	
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).InnerJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestLeftJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestLeftOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).OuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestCrossJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Cross Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).CrossJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestRightJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestRightOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestFullOuterJoin">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Full Outer Join sample.Contact As C On P.ID = C.Person"
+			
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).FullOuterJoin("sample.Contact As C","P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestJoinSubQuery">
+<Implementation><![CDATA[
+	Set join = "Select P.ID, P.Name, P.SSN "_
+		"From sample.person As P "_
+		"Inner Join (Select Person From sample.contact) As C On P.ID = C.Person"
+	
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN"
+		).Join( ##class(gen.SQLBuilder).%New("sample.contact"
+					).Select("Person").As("C") ,"P.ID","C.Person")
+		
+	Do ..Is(sqlBuilder.GetSQL(),join)
+]]></Implementation>
+</Method>
+
+<Method name="TestUpdate">
+<Implementation><![CDATA[
+	Set id = $Random(10)+1, name = "John Snow",	
+		sql = "Update sample.person SET Name = '"_name_"' "_
+				"Where Id = '"_id_"'",				
+		sqlBuilder = ..factory().Update(
+			).Set("Name", name
+			).Where("Id = ?",id	)
+			
+	Do ..Is(sqlBuilder.GetSQL(),sql)
+]]></Implementation>
+</Method>
+
+<Method name="TestUpdateSetIf">
+<Implementation><![CDATA[
+	Set id = 5, name = "John Snow",	
+		sql1 = "Update sample.person SET Name = '"_name_"' Where Id = '5'",		
+		sql2 = "Update sample.person SET Age = '30', Name = '"_name_"' Where Id = '6'",
+		sqlBuilder1 = ..factory().Update(
+			).Set("Name", name
+			).SetIf( id>5, "Age", 30
+			).Where("Id = ?",id), 
+		id = 6,
+		sqlBuilder2 = ..factory().Update(
+			).Set("Name", name
+			).SetIf( id>5, "Age", 30
+			).Where("Id = ?",id)
+			
+	Do ..Is(sqlBuilder1.GetSQL(),sql1)
+	Do ..Is(sqlBuilder2.GetSQL(),sql2)
+]]></Implementation>
+</Method>
+
+<Method name="TestHaving">
+<Implementation><![CDATA[
+	Set sql = "Select Count(1) As Elders,Age From sample.person Group By Age Having Age > '50'",		
+		sqlBuilder = ..factory().Select("Count(1) As Elders"
+			).Column("Age"
+			).GroupBy("Age"
+			).Having("Age > ?",50)
+			
+	Do ..Exactly(sqlBuilder.GetSQL(),sql)
+]]></Implementation>
+</Method>
+
+<Method name="TestByParam">
+<Implementation><![CDATA[
+	Set sqlBuilder = ..factory().ByParams().Select("Name").Where("Age = ?")
+	
+	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
+]]></Implementation>
+</Method>
+
+<Method name="TestMultipleInserts">
+<Implementation><![CDATA[
+	Do ##class(Sample.Person).%KillExtent()
+	
+	For k=1:1:5 {
+		Set sqlBuilder = ..factory().Insert(
+			).Set("Age",50
+			).Set("Name", ##class(%PopulateUtils).Name()
+			).Set("SSN",##class(%PopulateUtils).SSN())
+			
+		Set tRS = sqlBuilder.Execute(.tSC)
+		
+		Do ..Ok(tSC)
+	}
+	Set tRS2 = ..factory().Select("Count(1) as Result").Execute(.tSC)
+	Do ..Ok(tSC)
+	Do tRS2.%Next()
+	Do ..Exactly(tRS2.%Get("Result"),5)
+	
+	Do ##class(Sample.Person).%KillExtent()
+	
+	Set sqlBuilder2 = ..factory().ByParams().Insert(
+			).Set("Age",,$$$YES
+			).Set("Name",,$$$YES
+			).Set("SSN",,$$$YES)
+			
+	//D ..Exactly(sqlBuilder2.GetSQL(),"Insert INTO sample.person (Age, Name, SSN) VALUES (?, ?, ? )")
+	
+	D ..Ok(sqlBuilder2.Prepare())
+	
+	For k=1:1:50 {
+		Set tRS = sqlBuilder2.Execute(.tSC, $Random(50) + 10, ##class(%PopulateUtils).Name(),##class(%PopulateUtils).SSN() )
+		Do ..False(tRS.%SQLCODE)
+		Do ..Ok(tSC)
+	}
+	
+	
+	Set tRS2 = ..factory().Select("Count(1) as Result").Execute(.tSC)
+	Do ..Ok(tSC)
+	Do tRS2.%Next()
+	Do ..Exactly(tRS2.%Get("Result"),50)
+]]></Implementation>
+</Method>
+</Class>
+</Export>

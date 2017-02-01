@@ -1,7 +1,7 @@
 Class gen.SQLBuilder Extends %RegisteredObject
 {
 
-Parameter Version = "0.0.5";
+Parameter Version = "0.1.0";
 
 Property Select As %String [ InitialExpression = "*", Internal ];
 
@@ -30,6 +30,12 @@ Property Join As %ListOfDataTypes [ Private ];
 Property Having As %String [ Private ];
 
 Property Statement As %Integer(DISPLAYLIST = ",Select,Update,Insert,Delete", VALUELIST = ",1,2,3,4") [ InitialExpression = 1, Internal ];
+
+Property ByParams As %Boolean [ InitialExpression = 0, Private ];
+
+Property SQLStatement As %SQL.Statement;
+
+Property WasPreperedBefore As %Boolean [ InitialExpression = 0, Private ];
 
 Method SubQueryAlias()
 {
@@ -80,7 +86,7 @@ Method Insert() As gen.SQLBuilder
 
 Method Set(pField As %String, pValue As %String = "", pAllowNull As %Boolean = 0) As gen.SQLBuilder
 {
-	Do:((pValue'="")||(pAllowNull=1)) ..AddField(pField, pValue)
+	Do:((pValue'="")||(pAllowNull=$$$YES)||(..ByParams=$$$YES)) ..AddField(pField, pValue)
 	Quit $This
 }
 
@@ -219,9 +225,11 @@ ClassMethod JoinPrepare(pJoinSyntax As %String, pTable, pFirst As %String, pSeco
 	Quit pJoinSyntax _ " Join "_ pTable _" On "_ pFirst _ " = " _ pSecond
 }
 
-ClassMethod GetStringPrepare(args...) As %String [ Private ]
+Method GetStringPrepare(args...) As %String [ Private ]
 {
 	Set output = ""
+	Quit:..ByParams=$$$YES $Get(args(1))
+	
 	Try {
 		Set output = $Get(args(1))
 		
@@ -353,14 +361,29 @@ Method GetInsertStatement() As %String [ Private ]
 	Quit sql
 }
 
+Method Prepare() As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		Set ..SQLStatement = ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, ..SQLStatement.%Prepare(..GetSQL()))
+		Set ..WasPreperedBefore = $$$YES
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
 Method Execute(Output tSC As %Status = "", Args...) As %ResultSet
 {
 	Set tSC = $$$OK, tRS = ""
 	Try {
-		Set statement = ##class(%SQL.Statement).%New()
-		$$$THROWONERROR(tSC, statement.%Prepare(..GetSQL()))
 		
-		Set tRS = statement.%Execute(Args...)
+		If ..WasPreperedBefore=$$$NO {
+			$$$THROWONERROR(tSC, ..Prepare())
+		}
+		
+		Set tRS = ..SQLStatement.%Execute(Args...)
 	}
 	Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
@@ -395,7 +418,7 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status [ Private ]
 		
 		While field'="" {
 			Set updateAttr = " = ?"
-			Set:..Fields.GetAt(field)="" updateAttr = ""
+			Set:((..ByParams=$$$NO)&&(..Fields.GetAt(field)="")) updateAttr = ""
 			Set:..Statement=2 $List(into, *+1) = ..GetStringPrepare(field _ updateAttr, ..Fields.GetAt(field)) //Update
 			Kill updateAttr
 			
@@ -405,6 +428,9 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status [ Private ]
 			}
 
 			Set field = ..Fields.Next(field)
+			
+			S ^CacheTemp.ham($I(^CacheTemp.ham),"into") = into
+			S ^CacheTemp.ham($I(^CacheTemp.ham),"values") = values
 		}
 		
 		Set:..Statement=2 pQueryBlock = " SET " _ $ListToString(into,", ")
@@ -452,6 +478,12 @@ Method Having(args...) As gen.SQLBuilder
 	Quit:result="" $This
 	Quit ..HavingInternal(result)
 	
+	Quit $This
+}
+
+Method ByParams() As gen.SQLBuilder
+{
+	Set ..ByParams = $$$YES
 	Quit $This
 }
 

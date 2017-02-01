@@ -352,5 +352,55 @@ Method TestHaving()
 	Do ..Exactly(sqlBuilder.GetSQL(),sql)
 }
 
+Method TestByParam()
+{
+	Set sqlBuilder = ..factory().ByParams().Select("Name").Where("Age = ?")
+	
+	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
+}
+
+Method TestMultipleInserts()
+{
+	Do ##class(Sample.Person).%KillExtent()
+	
+	For k=1:1:5 {
+		Set sqlBuilder = ..factory().Insert(
+			).Set("Age",50
+			).Set("Name", ##class(%PopulateUtils).Name()
+			).Set("SSN",##class(%PopulateUtils).SSN())
+			
+		Set tRS = sqlBuilder.Execute(.tSC)
+		
+		Do ..Ok(tSC)
+	}
+	Set tRS2 = ..factory().Select("Count(1) as Result").Execute(.tSC)
+	Do ..Ok(tSC)
+	Do tRS2.%Next()
+	Do ..Exactly(tRS2.%Get("Result"),5)
+	
+	Do ##class(Sample.Person).%KillExtent()
+	
+	Set sqlBuilder2 = ..factory().ByParams().Insert(
+			).Set("Age",,$$$YES
+			).Set("Name",,$$$YES
+			).Set("SSN",,$$$YES)
+			
+	//D ..Exactly(sqlBuilder2.GetSQL(),"Insert INTO sample.person (Age, Name, SSN) VALUES (?, ?, ? )")
+	
+	D ..Ok(sqlBuilder2.Prepare())
+	
+	For k=1:1:50 {
+		Set tRS = sqlBuilder2.Execute(.tSC, $Random(50) + 10, ##class(%PopulateUtils).Name(),##class(%PopulateUtils).SSN() )
+		Do ..False(tRS.%SQLCODE)
+		Do ..Ok(tSC)
+	}
+	
+	
+	Set tRS2 = ..factory().Select("Count(1) as Result").Execute(.tSC)
+	Do ..Ok(tSC)
+	Do tRS2.%Next()
+	Do ..Exactly(tRS2.%Get("Result"),50)
+}
+
 }
 
