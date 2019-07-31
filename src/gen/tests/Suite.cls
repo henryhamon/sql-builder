@@ -1,12 +1,11 @@
-Class gen.tests.Suite Extends Atomic.UnitTest.TestSuite
+Class gen.tests.Suite Extends Pierogi.Suite
 {
 
 Parameter DESTROYTESTLOGS = 1;
 
-ClassMethod Package() As %String
+ClassMethod SpecsPackage() As %String
 {
 	Quit "gen.tests"
 }
 
 }
-
