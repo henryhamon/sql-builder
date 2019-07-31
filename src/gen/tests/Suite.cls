@@ -8,4 +8,9 @@ ClassMethod SpecsPackage() As %String
 	Quit "gen.tests"
 }
 
+ClassMethod ProjectPackage() As %String
+{
+	Quit "gen"
+}
+
 }

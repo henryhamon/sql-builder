@@ -110,10 +110,6 @@ Method TestUpdateSetCase()
 						_"WHEN (Age = 6) THEN 'Purple' END)")
 }
 
-Method testIf()
-{
-}
-
 Method TestSubQueryOnWhere()
 {
 	Set sqlBuilder = ..factory(
