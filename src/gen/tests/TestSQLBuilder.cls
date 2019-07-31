@@ -201,6 +201,56 @@ Method TestJoin()
 	Do ..Eql(sqlBuilder.GetSQL(),join)
 }
 
+Method TestInnerJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Inner Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).InnerJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestJoinWithMultipleClauses()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Inner Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).Join("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).InnerJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestJoinWithMultipleClausesProtected()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).Join("sample.Contact As C",,, "Select P.ID From Table WHERE P.Name = C.Name")
+
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).InnerJoin("sample.Contact As C",,, "Insert Into Table")
+
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
 Method TestLeftJoin()
 {
 	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_

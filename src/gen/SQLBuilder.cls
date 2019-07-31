@@ -269,9 +269,23 @@ Method Between(pProp, pInferior, pSuperior, pType = 0) As gen.SQLBuilder
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Inner Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method Join(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method Join(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Quit ..InnerJoin(pTable, pFirst, pSecond)
+	Quit ..InnerJoin(pTable, pFirst, pSecond, pRawClause)
+}
+
+/// Adiciona um <em>INNER JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 	).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").JoinRaw("sample.Contact As C","P.ID = C.Person AND P.Name = C.Name").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Inner Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method InnerJoinRaw(pTable, pRawClause As %String = "") As gen.SQLBuilder
+{
+	Quit ..InnerJoin(pTable, , , pRawClause)
 }
 
 /// Adiciona um <em>INNER JOIN</em> na Query <br />
@@ -284,9 +298,9 @@ Method Join(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Inner Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method InnerJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method InnerJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Inner",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Inner", pTable, pFirst, pSecond, pRawClause))
 	Quit $This
 }
 
@@ -405,7 +419,7 @@ Method CrossJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilde
 	Quit $This
 }
 
-ClassMethod JoinPrepare(pJoinSyntax As %String, pTable, pFirst As %String, pSecond As %String) As %String [ Private ]
+ClassMethod JoinPrepare(pJoinSyntax As %String, pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As %String [ Private ]
 {
 	If $IsObject(pTable) {
 		If $ClassName(pTable)=$ClassName($This) {
@@ -415,7 +429,12 @@ ClassMethod JoinPrepare(pJoinSyntax As %String, pTable, pFirst As %String, pSeco
 		}
 	}
 
-	Quit pJoinSyntax _ " Join "_ pTable _" On "_ pFirst _ " = " _ pSecond
+	Quit:(pRawClause = "") pJoinSyntax _ " Join "_ pTable _" On "_ pFirst _ " = " _ pSecond
+
+	Set aux = $ZConvert(pRawClause, "l")
+	Set:($Find(aux, "select ", 1)||$Find(aux, "delete ")||$Find(aux, "insert ")) pRawClause = ""
+	Quit:((pFirst = "") && (pSecond = "") && (pRawClause '= "")) pJoinSyntax _ " Join "_ pTable _" On ("_ pRawClause _ ")"
+	Quit ""
 }
 
 Method GetStringPrepare(args...) As %String [ Private ]
