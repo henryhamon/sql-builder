@@ -314,9 +314,24 @@ Method InnerJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawCl
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Left Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method LeftJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method LeftJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Left",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>LEFT JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").LeftJoinRaw("sample.Contact As C","P.ID = C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Left Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method LeftJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Left",pTable, , ,pRawClause))
 	Quit $This
 }
 
@@ -330,9 +345,24 @@ Method LeftJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Left Outer Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method LeftOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method LeftOuterJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>LEFT OUTER JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").LeftOuterJoinRaw("sample.Contact As C","P.ID = C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Left Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method LeftOuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Left Outer",pTable, , ,pRawClause))
 	Quit $This
 }
 
@@ -347,9 +377,25 @@ Method LeftOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBu
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Right Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method RightJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method RightJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Right",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>RIGHT JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+/// 		).RightJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Right Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method RightJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Right",pTable, , ,pRawClause))
 	Quit $This
 }
 
@@ -364,9 +410,25 @@ Method RightJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilde
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Right Outer Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method RightOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method RightOuterJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>RIGHT OUTER JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+/// 		).RightOuterJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Right Outer Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method RightOuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Right Outer",pTable, , , pRawClause))
 	Quit $This
 }
 
@@ -381,9 +443,25 @@ Method RightOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLB
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Outer Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method OuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method OuterJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Outer",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>OUTER JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+/// 		).OuterJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Outer Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method OuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Outer",pTable, , , pRawClause))
 	Quit $This
 }
 
@@ -396,9 +474,23 @@ Method OuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilde
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Full Outer Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method FullOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method FullOuterJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>FULL OUTER JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P").Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").FullOuterJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Full Outer Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method FullOuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Full Outer",pTable, , , pRawClause))
 	Quit $This
 }
 
@@ -413,9 +505,26 @@ Method FullOuterJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBu
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Cross Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
-Method CrossJoin(pTable, pFirst As %String, pSecond As %String) As gen.SQLBuilder
+Method CrossJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause As %String = "") As gen.SQLBuilder
 {
-	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond))
+	Do ..Join.Insert(..JoinPrepare("Cross",pTable, pFirst, pSecond, pRawClause))
+	Quit $This
+}
+
+/// Adiciona um <em>CROSS JOIN</em> na Query <br />
+/// O primeiro parâmetro é a tabela com o alias <br/>
+/// O segundo parâmetro é coluna chave da primeira tabela <br/>
+/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// <code>
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
+/// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+/// 		).CrossJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
+/// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Cross Join sample.Contact As C On P.ID = C.Person
+/// </code>
+/// <br/>
+Method CrossJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
+{
+	Do ..Join.Insert(..JoinPrepare("Cross",pTable, , , pRawClause))
 	Quit $This
 }
 

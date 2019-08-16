@@ -277,6 +277,70 @@ Method TestLeftOuterJoin()
 	Do ..Eql(sqlBuilder.GetSQL(),join)
 }
 
+Method TestLeftJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestLeftOuterJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Left Outer Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftOuterJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).LeftOuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestRightOuterJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Outer Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightOuterJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightOuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestRightJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Right Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).RightJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
 Method TestOuterJoin()
 {
 	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
@@ -290,6 +354,22 @@ Method TestOuterJoin()
 	Do ..Eql(sqlBuilder.GetSQL(),join)
 }
 
+Method TestOuterJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Outer Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).OuterJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).OuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
 Method TestCrossJoin()
 {
 	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
@@ -300,6 +380,22 @@ Method TestCrossJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).CrossJoin("sample.Contact As C","P.ID","C.Person")
 
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestCrossJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Cross Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).CrossJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).CrossJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
 	Do ..Eql(sqlBuilder.GetSQL(),join)
 }
 
@@ -339,6 +435,22 @@ Method TestFullOuterJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).FullOuterJoin("sample.Contact As C","P.ID","C.Person")
 
+	Do ..Eql(sqlBuilder.GetSQL(),join)
+}
+
+Method TestFullOuterJoinRaw()
+{
+	Set join = "Select P.ID, P.Name, P.SSN, C.Email, C.Phone "_
+			"From sample.person As P "_
+			"Full Outer Join sample.Contact As C On (P.ID = C.Person AND P.Name = C.Name)"
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).FullOuterJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
+
+	Set sqlBuilder = ..factory().As("P"
+		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
+		).FullOuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
 	Do ..Eql(sqlBuilder.GetSQL(),join)
 }
 
@@ -402,6 +514,12 @@ Method TestByParam()
 {
 	Set sqlBuilder = ..factory().ByParams().Select("Name").Where("Age = ?")
 
+	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
+}
+
+Method TestSQLInjection()
+{
+	Set sqlBuilder = ..factory().ByParams().Select("Name").Where("Age = ?", "10' OR '1'='1'")
 	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
 }
 
