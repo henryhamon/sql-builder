@@ -1,7 +1,7 @@
 Class gen.SQLBuilder Extends %RegisteredObject
 {
 
-Parameter Version = "0.2.1";
+Parameter Version = "0.2.2";
 
 Parameter Codename = "Brown Ramshorn Snails";
 
@@ -931,6 +931,21 @@ Method Top(pNumberOfRows As %Integer = "") As gen.SQLBuilder
 	Quit $This
 }
 
+/// Adiciona um <em>TOP</em> no <b>Select</b>  Caso atenda uma condição<br />
+/// O primeiro parâmetro é a condição <br/>
+/// <example>
+/// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").TopIf(1=1,10).GetSQL()
+/// ; Select TOP 10 name From sample.person
+/// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").TopIf(2=1,10).GetSQL()
+/// ; Select name From sample.person
+/// </example>
+/// <br/>
+Method TopIf(pCondition, pNumberOfRows As %Integer = "") As gen.SQLBuilder
+{
+	Quit:pCondition ..Top(pNumberOfRows)
+	Quit $This
+}
+
 /// Adiciona um <em>TOP</em> no <b>Select</b> <br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").Limit(10).GetSQL()
@@ -1124,6 +1139,12 @@ Method WhereFilter(pWhereColumn As %String = "", pTablePaneColumn As %String = "
     }
 	Quit:tValue'="" ..Where(WhereFltr,tValue)
 	Quit $This
+}
+
+/// Cria um clone do objeto SQLBuilder
+Method Clone() As gen.SQLBuilder
+{
+	Quit $This.%ConstructClone()
 }
 
 }

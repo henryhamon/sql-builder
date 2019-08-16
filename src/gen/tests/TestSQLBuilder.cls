@@ -523,4 +523,10 @@ Method TestSQLInjection()
 	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
 }
 
+Method TestClone()
+{
+		Set sqlBuilder = ..factory()
+		D ..True(sqlBuilder '= sqlBuilder.Clone())
+}
+
 }
