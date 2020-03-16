@@ -1,4 +1,4 @@
-Class gen.tests.TestSQLBuilder Extends Pierogi.Spec
+Class gen.tests.TestSQLBuilder Extends %UnitTest.TestCase
 {
 
 ClassMethod factory() As gen.SQLBuilder
@@ -9,13 +9,13 @@ ClassMethod factory() As gen.SQLBuilder
 Method TestSelect()
 {
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person")
-	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select name, ssn From sample.person")
 }
 
 Method TestSelectAll()
 {
 	Set sqlBuilder = ..factory().Select().From("sample.person")
-	Do ..Eql(sqlBuilder.GetSQL(),"Select * From sample.person")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select * From sample.person")
 }
 
 Method TestWhere()
@@ -24,7 +24,7 @@ Method TestWhere()
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person"
 		).Where("Name %STARSTSWITH ?","Jo")
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'")
 }
 
 Method TestOrderBy()
@@ -33,7 +33,7 @@ Method TestOrderBy()
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person"
 		).Order("Name")
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN From sample.person Order By Name")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select ID, Name, SSN From sample.person Order By Name")
 }
 
 Method TestBetween()
@@ -41,7 +41,7 @@ Method TestBetween()
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
 		).Between("Age",10,50)
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50)")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50)")
 }
 
 Method TestAndCondition()
@@ -49,7 +49,7 @@ Method TestAndCondition()
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
 		).Between("Age",10,50).And("Name %STARSTSWITH ?","Jo")
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50) AND Name %STARSTSWITH 'Jo'")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where (Age BETWEEN 10 AND 50) AND Name %STARSTSWITH 'Jo'")
 }
 
 Method TestComplexWhere()
@@ -58,7 +58,7 @@ Method TestComplexWhere()
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
 		).Where("Age In (?,?,?,?)",10,20,30,40)
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age In ('10','20','30','40')")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age In ('10','20','30','40')")
 }
 
 Method TestFixedArgument()
@@ -67,7 +67,7 @@ Method TestFixedArgument()
 	Set sqlBuilder = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person"
 		).Where("Age = 10")
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age = 10")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age = 10")
 }
 
 Method TestSimpleUpdate()
@@ -77,7 +77,7 @@ Method TestSimpleUpdate()
 		).Set("Name", "Nathan Drake"
 		).Set("Age", age).Where("ID = ?",10)
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET Age = '"_age_"', Name = 'Nathan Drake' Where ID = '10'")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Update sample.person SET Age = '"_age_"', Name = 'Nathan Drake' Where ID = '10'")
 }
 
 Method TestSimpleInsert()
@@ -87,7 +87,7 @@ Method TestSimpleInsert()
 		).Set("Name", "Nathan Drake"
 		).Set("Age", age)
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Insert INTO sample.person  (Age, Name) VALUES ('"_age_"', 'Nathan Drake' )")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Insert INTO sample.person  (Age, Name) VALUES ('"_age_"', 'Nathan Drake' )")
 }
 
 Method TestUpdateSetCase()
@@ -101,13 +101,15 @@ Method TestUpdateSetCase()
 						_"WHEN (Age = 5) THEN 'Blue' "
 						_"WHEN (Age = 6) THEN 'Purple' END)",,$$$YES)
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Update sample.person SET FavoriteColors = (CASE "
+	Set expected = "Update sample.person SET FavoriteColors = (CASE "
 						_"WHEN (Age = 1) THEN 'Red' "
 						_"WHEN (Age = 2) THEN 'Orange' "
 						_"WHEN (Age = 3) THEN 'Yellow' "
 						_"WHEN (Age = 4) THEN 'Green' "
 						_"WHEN (Age = 5) THEN 'Blue' "
-						_"WHEN (Age = 6) THEN 'Purple' END)")
+						_"WHEN (Age = 6) THEN 'Purple' END)"
+
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), expected)
 }
 
 Method TestSubQueryOnWhere()
@@ -118,7 +120,7 @@ Method TestSubQueryOnWhere()
 			).Select("Age").Where("Name = ?","Luke Skywalker")
 		)
 
-	Do ..Eql(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),"Select ID, Name, SSN, Age From sample.person Where Age =(Select Age From sample.person Where Name = 'Luke Skywalker')")
 }
 
 Method TestSelectColumn()
@@ -126,30 +128,30 @@ Method TestSelectColumn()
 	Set sqlBuilder = ..factory(
 		).Select().Column("ID").Column("Name").Where("Age > ?",10)
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
 
 
 	Set sqlBuilder = ..factory(
 		).Select("ID").Column("Name").Where("Age > ?",10)
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
 
 
 	Set sqlBuilder = ..factory(
 		).Select("ID").Column("Name").Column("Age","Ages").Where("Age > ?",10)
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,Name,Age As Ages From sample.person Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,Name,Age As Ages From sample.person Where Age > '10'" )
 }
 
 Method TestSubqueryOnSelect()
 {
 	Set sqlBuilder = ..factory(
 		).Select().Column("ID").Column("Name").Where("Age > ?",10)
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,Name From sample.person Where Age > '10'" )
 
 	Do sqlBuilder.Column(..factory().Select("Age").Where("Age < ?",50).As("Ages"))
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,Name,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
 }
 
 Method TestTableAlias()
@@ -159,27 +161,27 @@ Method TestTableAlias()
 		).Column( ..factory().Select("Age").Where("Age < ?",50).As("Ages")
 	).Where("Age > ?",10)
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person Where Age > '10'" )
 
 	Set sqlBuilder = ..factory().Column("ID"
 		).Column(..factory().Select("Age").Where("Age < ?",50).As("Ages")
 	).Where("Age > ?",10).As("First")
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select ID,(Select Age From sample.person Where Age < '50') As Ages From sample.person As First Where Age > '10'" )
 }
 
 Method TestUnion()
 {
 	Set sqlBuilder = ..factory().Where("Age = ?", 10).Union(..factory().Where("Age = ?", 15))
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union Select * From sample.person Where Age = '15'")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union Select * From sample.person Where Age = '15'")
 }
 
 Method TestUnionAll()
 {
 	Set sqlBuilder = ..factory().Where("Age = ?", 10).UnionAll(..factory().Where("Age = ?", 15))
 
-	Do ..Eql(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select * From sample.person Where Age = '10' Union All Select * From sample.person Where Age = '15'")
 }
 
 Method TestJoin()
@@ -192,13 +194,13 @@ Method TestJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).Join("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).InnerJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestInnerJoinRaw()
@@ -211,7 +213,7 @@ Method TestInnerJoinRaw()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).InnerJoinRaw("sample.Contact As C", "P.ID = C.Person AND P.Name = C.Name")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestJoinWithMultipleClauses()
@@ -224,13 +226,13 @@ Method TestJoinWithMultipleClauses()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).Join("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).InnerJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestJoinWithMultipleClausesProtected()
@@ -242,13 +244,13 @@ Method TestJoinWithMultipleClausesProtected()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).Join("sample.Contact As C",,, "Select P.ID From Table WHERE P.Name = C.Name")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).InnerJoin("sample.Contact As C",,, "Insert Into Table")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestLeftJoin()
@@ -261,7 +263,7 @@ Method TestLeftJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).LeftJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestLeftOuterJoin()
@@ -274,7 +276,7 @@ Method TestLeftOuterJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).LeftOuterJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestLeftJoinRaw()
@@ -290,7 +292,7 @@ Method TestLeftJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).LeftJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestLeftOuterJoinRaw()
@@ -306,7 +308,7 @@ Method TestLeftOuterJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).LeftOuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestRightOuterJoinRaw()
@@ -322,7 +324,7 @@ Method TestRightOuterJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).RightOuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestRightJoinRaw()
@@ -338,7 +340,7 @@ Method TestRightJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).RightJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestOuterJoin()
@@ -351,7 +353,7 @@ Method TestOuterJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).OuterJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestOuterJoinRaw()
@@ -367,7 +369,7 @@ Method TestOuterJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).OuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestCrossJoin()
@@ -380,7 +382,7 @@ Method TestCrossJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).CrossJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestCrossJoinRaw()
@@ -396,7 +398,7 @@ Method TestCrossJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).CrossJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestRightJoin()
@@ -409,7 +411,7 @@ Method TestRightJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).RightJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestRightOuterJoin()
@@ -422,7 +424,7 @@ Method TestRightOuterJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).RightOuterJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestFullOuterJoin()
@@ -435,7 +437,7 @@ Method TestFullOuterJoin()
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).FullOuterJoin("sample.Contact As C","P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestFullOuterJoinRaw()
@@ -451,7 +453,7 @@ Method TestFullOuterJoinRaw()
 	Set sqlBuilder = ..factory().As("P"
 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
 		).FullOuterJoin("sample.Contact As C",,, "P.ID = C.Person AND P.Name = C.Name")
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestJoinSubQuery()
@@ -465,7 +467,7 @@ Method TestJoinSubQuery()
 		).Join( ##class(gen.SQLBuilder).%New("sample.contact"
 					).Select("Person").As("C") ,"P.ID","C.Person")
 
-	Do ..Eql(sqlBuilder.GetSQL(),join)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),join)
 }
 
 Method TestUpdate()
@@ -477,7 +479,7 @@ Method TestUpdate()
 			).Set("Name", name
 			).Where("Id = ?",id	)
 
-	Do ..Eql(sqlBuilder.GetSQL(),sql)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),sql)
 }
 
 Method TestUpdateSetIf()
@@ -495,8 +497,8 @@ Method TestUpdateSetIf()
 			).SetIf( id>5, "Age", 30
 			).Where("Id = ?",id)
 
-	Do ..Eql(sqlBuilder1.GetSQL(),sql1)
-	Do ..Eql(sqlBuilder2.GetSQL(),sql2)
+	Do $$$AssertEquals(sqlBuilder1.GetSQL(),sql1)
+	Do $$$AssertEquals(sqlBuilder2.GetSQL(),sql2)
 }
 
 Method TestHaving()
@@ -507,26 +509,26 @@ Method TestHaving()
 			).GroupBy("Age"
 			).Having("Age > ?",50)
 
-	Do ..Exactly(sqlBuilder.GetSQL(),sql)
+	Do $$$AssertEquals(sqlBuilder.GetSQL(),sql)
 }
 
 Method TestByParam()
 {
 	Set sqlBuilder = ..factory().ByParams().Select("Name").Where("Age = ?")
 
-	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
 }
 
 Method TestSQLInjection()
 {
 	Set sqlBuilder = ..factory().ByParams().Select("Name").Where("Age = ?", "10' OR '1'='1'")
-	Do ..Exactly(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select Name From sample.person Where Age = ?")
 }
 
 Method TestClone()
 {
 		Set sqlBuilder = ..factory()
-		D ..True(sqlBuilder '= sqlBuilder.Clone())
+		D $$$AssertTrue(sqlBuilder '= sqlBuilder.Clone())
 }
 
 }
