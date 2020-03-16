@@ -1127,13 +1127,11 @@ Method WhereFilter(pWhereColumn As %String = "", pTablePaneColumn As %String = "
 	Set tValue = ""
 	Try{
 		Set:pInfo'="" ..Info = pInfo
-		Set:pSensitive=$$$NO pWhereColumn = "lower("_pWhereColumn_")"
-		Set tValue = $ZConvert(..Info.filters(pTablePaneColumn),"l")
-		Set:pSensitive=$$$YES tValue = ..Info.filters(pTablePaneColumn)
+		Set tValue = ..Info.filters(pTablePaneColumn)
 		Set tCondition = ..Info.filterOps(pTablePaneColumn),
 			WhereFltr = pWhereColumn_" "_tCondition
 		Set WhereFltr = WhereFltr_" ?"
-		//Set:tCondition="LIKE" WhereFltr = WhereFltr_" '%?%'"
+		
 	} Catch tException {
 		Set tSC = ##class(HPardini.Basico.Operacao.Utilitario).TrataObjErro(tException)
     }
