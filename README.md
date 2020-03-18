@@ -25,7 +25,7 @@ Download the archive from latest releases, and then import sql-builder-cos-vX.X.
 ## Examples ##
 
 ```cos
-	Set tRS = ##class(gen.SQLBuilder).%New("sample.person").Where("Age = ?", 30).Execute()
+	Set tRS = ##class(gen.SQLBuilder).%New("sample.person").Where("Age = ?", 30).GetSQL()
 ```
 
 SQL Output:

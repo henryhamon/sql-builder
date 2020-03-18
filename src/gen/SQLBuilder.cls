@@ -68,14 +68,14 @@ Method Delete(params As %String = "") As gen.SQLBuilder
 	Quit $This
 }
 
-/// Cria a cláusula <b>Select</b><br />
-/// Recebe uma string separada por vírgulas com as colunas<br/>
+/// Creates a <b>Select</b> query<br />
+/// taking an optional line string of columns for the query with comma separator<br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").GetSQL()
 /// ; Select name, ssn From sample.person
 /// </example>
 /// <br/>
-/// Caso não for passado nenhum parâmetro, assume que é um Select All<br/>
+/// defaulting to * if none are specified when the query is built<br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().From("sample.person").GetSQL()
 /// ; Select * From sample.person
@@ -121,14 +121,13 @@ Method SetIf(pCondition As %Boolean, args...) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona as <em>Colunas</em> na cláusula <b>Select</b><br />
-/// O primeiro parâmetro é a coluna <br/>
+/// Add <em>Columns</em> on <b>Select</b> query<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").Column("age").From("sample.person").Between("Age",10,50).GetSQL()
 /// ; Select name,age From sample.person Where (Age BETWEEN 10 AND 50)
 /// </example>
 /// <br/>
-/// O segundo parâmetro é opicional, ele adiciona um <em>Alias</em> <br/>
+/// taking an optional <em>Alias</em> as second parameter<br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name","nome").Column("age","idade").From("sample.person").Between("Age",10,50).GetSQL()
 /// ; Select name As nome,age As idade From sample.person Where (Age BETWEEN 10 AND 50)
@@ -147,7 +146,7 @@ Method Column(pField, pAlias As %String = "") As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>Alias</em> no nome da tabela<br />
+/// Add an <em>Alias</em> for Table<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").As("pessoa").GetSQL()
 /// ; Select name From sample.person As pessoa
@@ -159,17 +158,11 @@ Method As(pAlias As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona o <b>FROM</b><br />
-/// Recebe o nome da tabela<br/>
+/// <b>FROM</b><br />
+/// Specifies the table used in the current query<br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").GetSQL()
 /// ; Select name, ssn From sample.person
-/// </example>
-/// <br/>
-/// Caso não for passado nenhum parâmetro, assume que é um Select All<br/>
-/// <example>
-/// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.address").GetSQL()
-/// ; Select name, ssn From sample.address
 /// </example>
 /// <br/>
 Method From(pFrom As %String) As gen.SQLBuilder
@@ -178,21 +171,21 @@ Method From(pFrom As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona uma cláusula <b>Where</b> na query<br />
-/// O primeiro parâmetro é a instrução com um ou vários <em>?</em> <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Add <b>Where</b> clause<br />
+/// First parameter is the instruction with one or multiples<em>?</em> <br/>
+/// next arguments are the values<br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").GetSQL()
 /// ; Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'
 /// </example>
 /// <br/>
-/// Pode ser usado de maneira mais complexa<br/>
+/// A complex example:<br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person").Where("Age In (?,?,?,?)",10,20,30,40).GetSQL()
 /// ; Select ID, Name, SSN, Age From sample.person Where Age In ('10','20','30','40')
 /// </example>
 /// <br/>
-/// Também pode ser usado múltiplos, desta forma será adicionado como um <em>AND</em><br/>
+/// For multiples clauses will add an <em>AND</em><br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").Where("Age > ?",10).GetSQL()
 /// ; Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo' AND Age > '10'
@@ -215,9 +208,7 @@ Method WhereInterno(pWhere As %String, pAndOr = 0) As gen.SQLBuilder [ Internal,
 	Quit $This
 }
 
-/// Adiciona um <em>OR</em> na cláusula <b>Where</b><br />
-/// O primeiro parâmetro é a cláusula <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Add an <em>OR</em> on <b>Where</b> clause<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").Or("Age = ?", 10).GetSQL()
 /// ; Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo' OR Age = '10'
@@ -230,9 +221,7 @@ Method Or(args...) As gen.SQLBuilder
 	Quit ..WhereInterno(result,1)
 }
 
-/// Adiciona um <em>AND</em> na cláusula <b>Where</b> <br />
-/// O primeiro parâmetro é a cláusula <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Add an <em>AND</em> on <b>Where</b> <br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").And("Age > ?", 10).GetSQL()
 /// ; Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo' AND Age > '10'
@@ -245,10 +234,9 @@ Method And(args...) As gen.SQLBuilder
 	Quit ..WhereInterno(result)
 }
 
-/// Adiciona um <em>BETWEEN</em> na cláusula <b>Where</b> <br />
-/// O primeiro parâmetro é a coluna <br/>
-/// O segundo parâmetro é primeiro valor <br/>
-/// O terceiro parâmetro é segundo valor <br/>
+/// Add an <em>BETWEEN</em> on <b>Where</b> <br />
+/// first parameter is the column name <br/>
+/// second and third parameters are the values
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Between("Age",10,50).GetSQL()
 /// ; Select name, ssn From sample.person Where (Age BETWEEN 10 AND 50)
@@ -260,10 +248,9 @@ Method Between(pProp, pInferior, pSuperior, pType = 0) As gen.SQLBuilder
 	Quit ..WhereInterno(sql)
 }
 
-/// Adiciona um <em>INNER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To add <em>INNER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P").Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").Join("sample.Contact As C","P.ID","C.Person").GetSQL()
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Inner Join sample.Contact As C On P.ID = C.Person
@@ -274,9 +261,9 @@ Method Join(pTable, pFirst As %String = "", pSecond As %String = "", pRawClause 
 	Quit ..InnerJoin(pTable, pFirst, pSecond, pRawClause)
 }
 
-/// Adiciona um <em>INNER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// To add <em>INNER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument the JOIN-ing condition
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 	).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").JoinRaw("sample.Contact As C","P.ID = C.Person AND P.Name = C.Name").GetSQL()
@@ -288,13 +275,11 @@ Method InnerJoinRaw(pTable, pRawClause As %String = "") As gen.SQLBuilder
 	Quit ..InnerJoin(pTable, , , pRawClause)
 }
 
-/// Adiciona um <em>INNER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To add <em>INNER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
-/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
-/// 	).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").InnerJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
+/// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P").Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").Join("sample.Contact As C","P.ID","C.Person").GetSQL()
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Inner Join sample.Contact As C On P.ID = C.Person
 /// </code>
 /// <br/>
@@ -304,10 +289,9 @@ Method InnerJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawCl
 	Quit $This
 }
 
-/// Adiciona um <em>LEFT JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do a <em>LEFT JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").LeftJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
@@ -320,9 +304,9 @@ Method LeftJoin(pTable, pFirst As %String = "", pSecond As %String = "", pRawCla
 	Quit $This
 }
 
-/// Adiciona um <em>LEFT JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é cláusula das chaves das tabelas para o Join<br/>
+/// To do a <em>LEFT JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument the JOIN-ing condition
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").LeftJoinRaw("sample.Contact As C","P.ID = C.Person").GetSQL()
@@ -335,10 +319,9 @@ Method LeftJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>LEFT OUTER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do a <em>LEFT OUTER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").LeftOuterJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
@@ -366,10 +349,9 @@ Method LeftOuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>RIGHT JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do a <em>RIGHT JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
@@ -399,10 +381,9 @@ Method RightJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>RIGHT OUTER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do a <em>RIGHT OUTER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
@@ -432,10 +413,9 @@ Method RightOuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>OUTER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do an <em>OUTER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
@@ -465,10 +445,9 @@ Method OuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>FULL OUTER JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do a <em>FULL OUTER JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P").Select("P.ID, P.Name, P.SSN, C.Email, C.Phone").FullOuterJoin("sample.Contact As C","P.ID","C.Person").GetSQL()
 /// ; Select P.ID, P.Name, P.SSN, C.Email, C.Phone From sample.person As P Full Outer Join sample.Contact As C On P.ID = C.Person
@@ -494,10 +473,9 @@ Method FullOuterJoinRaw(pTable, pRawClause As %String) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>CROSS JOIN</em> na Query <br />
-/// O primeiro parâmetro é a tabela com o alias <br/>
-/// O segundo parâmetro é coluna chave da primeira tabela <br/>
-/// O terceiro parâmetro é coluna chave da segunda tabela <br/>
+/// To do a <em>CROSS JOIN</em> between tables <br />
+/// The first argument being the table name with Alias,
+/// the next argument being the first join column and the second join column
 /// <code>
 /// Write ##class(gen.SQLBuilder).%New().From("sample.person").As("P"
 /// 		).Select("P.ID, P.Name, P.SSN, C.Email, C.Phone"
@@ -680,7 +658,7 @@ Method WhereIf(pCondition, args...) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Retorna a string da Query SQL<br />
+/// Get the SQL Query string<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").GetSQL()
 /// ; Select name, ssn From sample.person
@@ -752,7 +730,7 @@ Method GetInsertStatement() As %String [ Private ]
 	Quit sql
 }
 
-/// Prepara o <b>ResultSet</b> da query<br />
+/// Prepare the query <b>ResultSet</b><br />
 /// <example>
 /// Set tRS = ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN, Age").From("sample.person").Between("Age",10,50).Prepare()
 /// Write $ClassName(tRS)
@@ -778,7 +756,7 @@ Method Prepare(tSC As %Status) As %ResultSet
 	Quit ..ResultSet
 }
 
-/// Executa a <b>Query</b> retornando o ResultSet<br />
+/// Execute the <b>Query</b> returning the ResultSet<br />
 Method Execute(Output tSC As %Status = "", Args...) As %ResultSet
 {
 	Set tSC = $$$OK, tRS = ""
@@ -1131,7 +1109,7 @@ Method WhereFilter(pWhereColumn As %String = "", pTablePaneColumn As %String = "
 		Set tCondition = ..Info.filterOps(pTablePaneColumn),
 			WhereFltr = pWhereColumn_" "_tCondition
 		Set WhereFltr = WhereFltr_" ?"
-		
+
 	} Catch tException {
 		Set tSC = ##class(HPardini.Basico.Operacao.Utilitario).TrataObjErro(tException)
     }
