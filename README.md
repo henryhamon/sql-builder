@@ -26,13 +26,14 @@ Download the archive from latest releases, and then import sql-builder-cos-vX.X.
 ## Examples ##
 
 ```cos
-	Set tRS = ##class(gen.SQLBuilder).%New("sample.person").Where("Age = ?", 30).GetSQL()
+	Set tRS = ##class(gen.SQLBuilder).%New("sample.person").Where("Age = ?", 30).Execute()
 ```
 
-SQL Output:
+SQL Executed:
 ```sql
 	Select * From sample.person Where Age = '30'
 ```
+
 ## Authors ##
 
  * Leonardo "Metz" Metzger [github](https://github.com/leometzger)

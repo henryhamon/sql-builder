@@ -829,8 +829,8 @@ Method AbstractGetFieldsBlock(Output pQueryBlock) As %Status [ Private ]
 	Quit tSC
 }
 
-/// Adiciona um <em>UNION</em> com outra Query <br />
-/// Recebe como parâmetro outro objeto SQLBuilder <br/>
+/// Creates a <em>UNION</em> Query <br />
+/// The parameter is another SQLBuilder object <br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person").Union( ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person")).GetSQL()
 /// ; Select ID, Name, SSN From sample.person Union Select ID, Name, SSN From sample.person
@@ -842,8 +842,8 @@ Method Union(pSQL As gen.SQLBuilder) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>UNION ALL</em> com outra Query <br />
-/// Recebe como parâmetro outro objeto SQLBuilder <br/>
+/// Creates a <em>UNION ALL</em> Query <br />
+/// The parameter is another SQLBuilder object <br/>
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person").UnionAll( ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person")).GetSQL()
 /// ; Select ID, Name, SSN From sample.person Union All Select ID, Name, SSN From sample.person
@@ -865,7 +865,7 @@ Method HavingInternal(pHaving As %String, pAndOr = 0) As gen.SQLBuilder [ Intern
 	Quit $This
 }
 
-/// Adiciona um <em>HAVING</em> no <em>GROUP BY</em> da query <br />
+/// Add <em>HAVING</em> on <em>GROUP BY</em> clause <br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select("ID, Name, SSN").From("sample.person").GroupBy("Name").Having("Age > ?", 50).GetSQL()
 /// ; Select ID, Name, SSN From sample.person Group By Name Having Age > '50'
@@ -893,7 +893,7 @@ Method ByParams() As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>TOP</em> no <b>Select</b> <br />
+/// Adds a <em>TOP</em> clause to the query
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").Top(10).GetSQL()
 /// ; Select TOP 10 name From sample.person
@@ -905,8 +905,7 @@ Method Top(pNumberOfRows As %Integer = "") As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>TOP</em> no <b>Select</b>  Caso atenda uma condição<br />
-/// O primeiro parâmetro é a condição <br/>
+/// Adds a <em>TOP</em> clause to the query when a condition is true<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").TopIf(1=1,10).GetSQL()
 /// ; Select TOP 10 name From sample.person
@@ -920,7 +919,7 @@ Method TopIf(pCondition, pNumberOfRows As %Integer = "") As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona um <em>TOP</em> no <b>Select</b> <br />
+/// Adds a <em>TOP</em> clause to the query
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").Limit(10).GetSQL()
 /// ; Select TOP 10 name From sample.person
@@ -931,7 +930,7 @@ Method Limit(pNumberOfRows As %Integer = "") As gen.SQLBuilder
 	Quit ..Top(pNumberOfRows)
 }
 
-/// Adiciona uma condição <em>IN</em> na cláusula <b>Where</b> <br />
+/// Adds an <em>IN</em> clause to the query<br />
 /// O primeiro parâmetro é o nome da coluna <br/>
 /// Os demais parâmetros são os valores<br/>
 /// <example>
@@ -944,10 +943,7 @@ Method In(pColumn, args...) As gen.SQLBuilder
 	Quit ..WhereInInterno($$$NO, pColumn, args...)
 }
 
-/// Adiciona uma condição <em>IN</em> na query Caso atenda uma condição<br /><br />
-/// O primeiro parâmetro é a condição <br/>
-/// O segundo parâmetro é a cláusula <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds an <em>IN</em> clause to the query when a condition is true<br /><br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").InIf(5>5,"age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person
@@ -960,10 +956,7 @@ Method InIf(pCondition, pColumn, args...) As gen.SQLBuilder
 	Quit ..WhereInIf(pCondition, pColumn, args...)
 }
 
-/// Adiciona uma condição <em>IN</em> na query Caso atenda uma condição<br /><br />
-/// O primeiro parâmetro é a condição <br/>
-/// O segundo parâmetro é a cláusula <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds an <em>IN</em> clause to the query when a condition is true<br /><br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").WhereInIf(5>5,"age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person
@@ -977,9 +970,7 @@ Method WhereInIf(pCondition, pColumn, args...) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona uma condição <em>IN</em> na cláusula <b>Where</b> <br />
-/// O primeiro parâmetro é o nome da coluna <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds an <em>IN</em> clause to the query<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").WhereIn("age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person Where age In ('10','20','30','40')
@@ -990,10 +981,7 @@ Method WhereIn(pColumn, args...) As gen.SQLBuilder
 	Quit ..WhereInInterno($$$NO, pColumn, args...)
 }
 
-/// Adiciona uma condição <em>NOT IN</em> na query Caso atenda uma condição<br /><br />
-/// O primeiro parâmetro é a condição <br/>
-/// O segundo parâmetro é a cláusula <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds a <em>NOT IN</em> clause to the query when a condition is true<br /><br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").WhereNotInIf(5>5,"age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person
@@ -1007,9 +995,7 @@ Method WhereNotInIf(pCondition, pColumn, args...) As gen.SQLBuilder
 	Quit $This
 }
 
-/// Adiciona uma condição <em>NOT IN</em> na cláusula <b>Where</b> <br />
-/// O primeiro parâmetro é o nome da coluna <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds an <em>NOT IN</em> clause to the query<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").NotIn("age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person Where age Not In ('10','20','30','40')
@@ -1020,10 +1006,7 @@ Method NotIn(pColumn, args...) As gen.SQLBuilder
 	Quit ..WhereInInterno($$$YES, pColumn, args...)
 }
 
-/// Adiciona uma condição <em>NOT IN</em> na query Caso atenda uma condição<br /><br />
-/// O primeiro parâmetro é a condição <br/>
-/// O segundo parâmetro é a cláusula <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds a <em>NOT IN</em> clause to the query when a condition is true<br /><br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").NotInIf(5>5,"age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person
@@ -1036,9 +1019,7 @@ Method NotInIf(pCondition, pColumn, args...) As gen.SQLBuilder
 	Quit ..WhereNotInIf(pCondition, pColumn, args...)
 }
 
-/// Adiciona uma condição <em>NOT IN</em> na cláusula <b>Where</b> <br />
-/// O primeiro parâmetro é o nome da coluna <br/>
-/// Os demais parâmetros são os valores<br/>
+/// Adds an <em>NOT IN</em> clause to the query<br />
 /// <example>
 /// Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").WhereNotIn("age",10,20,30,40).GetSQL()
 /// ; Select name From sample.person Where age Not In ('10','20','30','40')
