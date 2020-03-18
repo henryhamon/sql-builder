@@ -3,7 +3,8 @@
 A flexible and powerful SQL query string builder for Intersystems Caché.
 
 ## Benefits ##
-	1. Nice and clean object oriented methods instead of having to use concatenation and substituition to generate dynamic queries
+	1. Nice and clean object oriented methods instead of having to use concatenation
+  	and substituition to generate dynamic queries
 	2. Flexibility to build query adding clauses with logical conditions
 
 ## Installation ##
