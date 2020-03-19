@@ -22,7 +22,8 @@ Open the terminal in this directory and run:
 ```
 $ docker-compose build
 ```
-    Run the IRIS container with your project:
+
+Run the IRIS container with your project:
 ```
 $ docker-compose up -d
 ```
@@ -192,8 +193,10 @@ Adds a TOP clause to the query when a condition is true
 ```sql
 	Select TOP 10 name From sample.person
 ```
+
 ```
-	Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").TopIf(2=1,10).GetSQL()
+Write ##class(gen.SQLBuilder).%New(
+	).Select().Column("name").From("sample.person").TopIf(2=1,10).GetSQL()
 ```
 **Output**
 ```sql
@@ -206,7 +209,9 @@ Adds a TOP clause to the query when a condition is true
 #### And(args...)
 Add an AND on Where
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").And("Age > ?", 10).GetSQL()
+Write ##class(gen.SQLBuilder).%New(
+	).Select("name, ssn").From("sample.person"
+	).Where("Name %STARSTSWITH ?","Jo").And("Age > ?", 10).GetSQL()
 ```
 **Output**
 ```sql
@@ -218,14 +223,18 @@ Add an AND on Where clause when a condition is true
 First parameter is a boolean condition Second parameter is the instruction with one or multiples?
 next arguments are the values
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").AndIf(5 > 5, "Age = ?", 5).GetSQL()
+Write ##class(gen.SQLBuilder).%New(
+	).Select("name, ssn").From("sample.person"
+	).Where("Name %STARSTSWITH ?","Jo").AndIf(5 > 5, "Age = ?", 5).GetSQL()
 ```
 **Output**
 ```sql
 	Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'
 ```
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").AndIf(10 > 1, "Age = ?", 10).GetSQL()
+Write ##class(gen.SQLBuilder).%New(
+	).Select("name, ssn").From("sample.person"
+	).Where("Name %STARSTSWITH ?","Jo").AndIf(10 > 1, "Age = ?", 10).GetSQL()
 ```
 **Output**
 ```sql
@@ -237,7 +246,7 @@ Add an BETWEEN on Where
 first parameter is the column name
 second and third parameters are the values
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Between("Age",10,50).GetSQL()
+Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Between("Age",10,50).GetSQL()
 ```
 **Output**
 ```sql
@@ -247,7 +256,9 @@ second and third parameters are the values
 #### Or(args...)
 Add an OR on Where clause
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").Or("Age = ?", 10).GetSQL()
+Write ##class(gen.SQLBuilder).%New().Select("name, ssn"
+	).From("sample.person"
+	).Where("Name %STARSTSWITH ?","Jo").Or("Age = ?", 10).GetSQL()
 ```
 **Output**
 ```sql
@@ -259,14 +270,17 @@ Add an OR on Where clause when a condition is true
 First parameter is a boolean condition Second parameter is the instruction with one or multiples?
 next arguments are the values
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").OrIf(5 > 5, "Age = ?", 5).GetSQL()
+Write ##class(gen.SQLBuilder).%New(
+	).Select("name, ssn").From("sample.person"
+	).Where("Name %STARSTSWITH ?","Jo").OrIf(5 > 5, "Age = ?", 5).GetSQL()
 ```
 **Output**
 ```sql
-	Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'
+Select name, ssn From sample.person Where Name %STARSTSWITH 'Jo'
 ```
+
 ```
-	Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").OrIf(10 > 1, "Age = ?", 10).GetSQL()
+Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").Where("Name %STARSTSWITH ?","Jo").OrIf(10 > 1, "Age = ?", 10).GetSQL()
 ```
 **Output**
 ```sql
@@ -278,7 +292,7 @@ Adds an IN clause to the query
 O primeiro parâmetro é o nome da coluna
 Os demais parâmetros são os valores
 ```
-	Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").In("age",10,20,30,40).GetSQL()
+Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").In("age",10,20,30,40).GetSQL()
 ```
 **Output**
 ```sql
@@ -288,7 +302,9 @@ Os demais parâmetros são os valores
 #### InIf(pCondition, pColumn, args...)
 Adds an IN clause to the query when a condition is true
 ```
-	Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").InIf(5>5,"age",10,20,30,40).GetSQL()
+Write ##class(gen.SQLBuilder).%New(
+	).Select().Column("name").From("sample.person"
+	).InIf(5>5,"age",10,20,30,40).GetSQL()
 ```
 **Output**
 ```sql
@@ -296,7 +312,7 @@ Select name From sample.person
 ```
 
 ```
-	Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").InIf(6>5,"age",10,20,30,40).GetSQL()
+Write ##class(gen.SQLBuilder).%New().Select().Column("name").From("sample.person").InIf(6>5,"age",10,20,30,40).GetSQL()
 ```
 **Output**
 ```sql
