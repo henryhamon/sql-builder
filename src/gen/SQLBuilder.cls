@@ -1,9 +1,9 @@
 Class gen.SQLBuilder Extends %RegisteredObject
 {
 
-Parameter Version = "0.2.2";
+Parameter Version = "1.0.0";
 
-Parameter Codename = "Brown Ramshorn Snails";
+Parameter Codename = "Asolene";
 
 Property Select As %String [ InitialExpression = "*", Internal ];
 

@@ -1,6 +1,6 @@
-# SQL-Builder COS #
+# SQLBuilder #
 
-A flexible and powerful SQL query string builder for Intersystems Caché.
+A flexible and powerful SQL query string builder for InterSystems IRIS
 
 ## Benefits ##
 	1. Nice and clean object oriented methods instead of having to use concatenation
@@ -9,19 +9,32 @@ A flexible and powerful SQL query string builder for Intersystems Caché.
 
 ## Installation ##
 
-### ZPM ###
+### Docker ###
 
-To install with ZPM(ObjectScript Package Manager) just run install sqlbuilder
+Open terminal and clone/git pull the repo into any local directory
 
 ```
-	USER>zpm
-	zpm: USER>install sqlbuilder
+$ git clone https://github.com/henryhamon/sql-builder.git
 ```
 
-### Import Package ###
+Open the terminal in this directory and run:
 
-To install latest SQL-Builder, you just need to import xml package.
-Download the archive from latest releases, and then import sql-builder-cos-vX.X.X.xml file.
+```
+$ docker-compose build
+```
+    Run the IRIS container with your project:
+```
+$ docker-compose up -d
+```
+
+## How to Run the Application
+Open InterSystems IRIS terminal:
+
+```
+$ docker-compose exec iris iris session iris
+USER>zn "IRISAPP"
+IRISAPP>Write ##class(gen.SQLBuilder).%New().Select("name, ssn").From("sample.person").GetSQL()
+```
 
 ## Examples ##
 
