@@ -776,7 +776,7 @@ Method Execute(Output tSC As %Status = "", Args...) As %ResultSet
 	Quit tRS
 }
 
-Method %OnNew(table As %String = "", pIsStatement As %Boolean = 0, pRuntimeMode As %Integer = 0, pInfo As %ZEN.Auxiliary.QueryInfo = "") As %Status [ Private, ServerOnly = 1 ]
+Method %OnNew(table As %String = "", pIsStatement As %Boolean = 1, pRuntimeMode As %Integer = 0, pInfo As %ZEN.Auxiliary.QueryInfo = "") As %Status [ Private, ServerOnly = 1 ]
 {
 	Set ..From = table
 	Set ..SQLType = "RS"
