@@ -3,7 +3,8 @@
   <Document name="sqlbuilder.ZPM">
     <Module>
       <Name>sqlbuilder</Name>
-      <Version>1.0.0</Version>
+      <Version>1.0.1</Version>
+      <Description>A flexible and powerful SQL query string builder for InterSystems IRIS</Description>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
       <Resource Name="gen.PKG"/>
