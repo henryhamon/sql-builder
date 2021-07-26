@@ -1,3 +1,5 @@
+[![Gitter](https://img.shields.io/badge/Available%20on-Intersystems%20Open%20Exchange-00b2a9.svg)](https://openexchange.intersystems.com/package/sql-builder)
+
 # SQLBuilder #
 
 A flexible and powerful SQL query string builder for InterSystems IRIS
