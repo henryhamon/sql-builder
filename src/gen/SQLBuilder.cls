@@ -534,7 +534,7 @@ Method GetStringPrepare(args...) As %String [ Private ]
 		If $Get(args,0) > 1 {
 			Set k = 2, sanitize = "'"
 
-			Set:$Find($ZConvert(output,"U"),"LIKE")>0 sanitize = "#"
+			Set:$Find($ZConvert(output,"U"),"LIKE")>0 sanitize = $Char(254)
 			Set matcher = $ListFromString(output,"?"), output = ""
 
 			For i=1:1:$ListLength(matcher) {
@@ -551,8 +551,8 @@ Method GetStringPrepare(args...) As %String [ Private ]
 			}
 
 			Set:$Find(output,"''")>0 output = ""
-			Set:$Find(output,"##")>0 output = ""
-			Set:output'="" output = $Replace(output,"#","")
+			Set:$Find(output,$Char(254,254))>0 output = ""
+			Set:output'="" output = $Replace(output,$Char(254),"")
 		}
 	} Catch {
 		Set output = ""
@@ -1088,16 +1088,16 @@ Method WhereFilter(pWhereColumn As %String = "", pTablePaneColumn As %String = "
 		Set WhereFltr = WhereFltr_" ?"
 
 	} Catch tException {
-		Set tSC = ##class(HPardini.Basico.Operacao.Utilitario).TrataObjErro(tException)
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
     }
-	Quit:tValue'="" ..Where(WhereFltr,tValue)
-	Quit $This
+	Return:tValue'="" ..Where(WhereFltr,tValue)
+	Return $This
 }
 
 /// Cria um clone do objeto SQLBuilder
 Method Clone() As gen.SQLBuilder
 {
-	Quit $This.%ConstructClone()
+	Return $This.%ConstructClone()
 }
 
 }

@@ -531,4 +531,16 @@ Method TestClone()
 		D $$$AssertTrue(sqlBuilder '= sqlBuilder.Clone())
 }
 
+Method TestSanitize()
+{
+	Set sqlBuilder = ..factory().Select("Name").Where("Thing = ?", "BASO#")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select Name From sample.person Where Thing = 'BASO#'")
+}
+
+Method TestLike()
+{
+	Set sqlBuilder = ..factory().Select("Name").Where("Thing Like '%?%'", "BASO#")
+	Do $$$AssertEquals(sqlBuilder.GetSQL(), "Select Name From sample.person Where Thing Like '%BASO#%'")
+}
+
 }
